@@ -1,6 +1,6 @@
 import {
   type ActionFunction,
-  type LoaderFunction,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
   json,
 } from "@remix-run/cloudflare";
@@ -10,8 +10,6 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { getD1Client } from "~/data";
 import { sessionDB } from "~/data/schema";
-
-// import VideoPlayer from "~/components/VideoPlayer";
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
@@ -32,9 +30,7 @@ export const loader = async ({ params, context }: LoaderFunctionArgs) => {
   });
 };
 
-export const action: ActionFunction = async ({
-  request,
-}: LoaderFunctionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const question = formData.get("question");
   console.log("TODO: ask question", question);
@@ -56,7 +52,7 @@ export default function SessionPage() {
     "short" | "medium" | "long"
   >("short");
 
-  const answerFetcher = useFetcher();
+  const answerFetcher = useFetcher<typeof action>();
 
   function handleAskQuestion(billId: string, question: string) {
     answerFetcher.submit(
@@ -87,12 +83,17 @@ export default function SessionPage() {
 
       <iframe
         title="Parliament Wow"
+        id="UKPPlayer"
+        name="UKPPlayer"
+        seamless={true}
+        frameBorder={0}
+        allow="encrypted-media; autoplay; fullscreen"
         src={`${session.videoUrl.replace(
           "https://parliamentlive.tv/event/index/",
           "https://videoplayback.parliamentlive.tv/Player/Index/"
         )}?audioOnly=False&autoStart=True&script=True`}
         width="100%"
-        height="500px"
+        height="540px"
         allowFullScreen
       />
 
@@ -109,9 +110,9 @@ export default function SessionPage() {
               }}
               onClick={() => {
                 if (activeBill !== bill.id) {
+                  answerFetcher.data = null;
                   setActiveBill(bill.id);
                   setActiveSummary("short");
-                  answerFetcher.data = null;
                 }
               }}
             >
