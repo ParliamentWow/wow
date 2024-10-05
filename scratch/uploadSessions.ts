@@ -2,6 +2,7 @@ import { hc } from "hono/client";
 import { SessionRoute } from "../app/api/sessions";
 import file from "./file.json";
 import { readFile } from "fs/promises";
+const localClient = hc<SessionRoute>("http://localhost:8787/api");
 const client = hc<SessionRoute>(
   "https://parliament-wow.threepointone.workers.dev/api"
 );
@@ -45,19 +46,19 @@ async function uploadSessions() {
         "bills",
         bills.map((el) => el.name)
       );
-      const res = await client.sessions.$post({
+
+      const res = await localClient.sessions.$post({
         json: {
           id,
           name: `${session.room} - ${session.date}`,
-          vidioUrl: session.url,
+          videoUrl: session.url,
           room: session.room,
           timestamp: session.date,
-          bill: bills,
+          bills: bills,
         },
       });
 
       const response = await res.json();
-      console.log(response.error);
     } catch (e) {
       console.log(e);
     }

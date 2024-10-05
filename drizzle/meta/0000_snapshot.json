@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3e31df3c-7d79-42f5-8ff3-3171ba19b651",
+  "id": "af0f541b-265e-43a6-b3d8-866d560b57c5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "session": {
@@ -28,8 +28,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "vidioUrl": {
-          "name": "vidioUrl",
+        "videoUrl": {
+          "name": "videoUrl",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

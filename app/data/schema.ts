@@ -7,7 +7,7 @@ export const sessionDB = sqliteTable("session", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  vidioUrl: text("vidioUrl").notNull(),
+  videoUrl: text("videoUrl").notNull(),
   room: text("room").notNull(),
   timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
   bills: text("bills", { mode: "json" })
