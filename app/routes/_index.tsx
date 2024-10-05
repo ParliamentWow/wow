@@ -1,21 +1,25 @@
-import { type LoaderFunction, json } from "@remix-run/cloudflare";
+import {
+  type LoaderFunction,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { useState } from "react";
-import SessionList from "~/components/SessionList";
-import { type Session, getSessions } from "~/utils/api.server";
+import SessionList, { type Session } from "~/components/SessionList";
+import { getD1Client } from "~/data";
 
-interface LoaderData {
-  sessions: Session[];
-}
+// interface LoaderData {
+//   sessions: Session[];
+// }
 
-export const loader: LoaderFunction = async () => {
-  const sessions = await getSessions();
-
-  return json<LoaderData>({ sessions });
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+  const db = getD1Client(context.env);
+  const sessions = await db.query.sessionDB.findMany();
+  return json({ sessions });
 };
 
 export default function Index() {
-  const { sessions } = useLoaderData<LoaderData>();
+  const { sessions } = useLoaderData<typeof loader>();
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
@@ -39,18 +43,8 @@ export default function Index() {
       </div>
       <div className="space-y-8">
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Live Sessions</h2>
-          <SessionList sessions={sessions.filter((s) => s.isLive)} />
-        </section>
-        <section>
           <h2 className="text-2xl font-semibold mb-4">Past Sessions</h2>
-          <SessionList sessions={sessions.filter((s) => s.status === "past")} />
-        </section>
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">Upcoming Sessions</h2>
-          <SessionList
-            sessions={sessions.filter((s) => s.status === "upcoming")}
-          />
+          <SessionList sessions={sessions as unknown as Session[]} />
         </section>
       </div>
     </div>

@@ -1,59 +1,56 @@
-import { type LoaderFunction, json } from "@remix-run/cloudflare";
+import {
+  type ActionFunction,
+  type LoaderFunction,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { eq } from "drizzle-orm";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { getD1Client } from "~/data";
+import { sessionDB } from "~/data/schema";
+
 // import VideoPlayer from "~/components/VideoPlayer";
-import {
-  // askQuestion,
-  getSessionById,
-  // getSessionDetails,
-  getSessionSummary,
-} from "~/utils/api.server";
 
-interface Session {
-  id: string;
-  title: string;
-  videoUrl: string;
-  isLive: boolean;
-  status: "live" | "upcoming" | "past" | string;
+function assert(condition: unknown, message: string) {
+  if (!condition) {
+    throw new Error(message);
+  }
 }
 
-interface SessionSummary {
-  shortSummary: string;
-  longSummary: string;
-}
+export const loader = async ({ params, context }: LoaderFunctionArgs) => {
+  const db = getD1Client(context.env);
+  const session = await db.query.sessionDB.findFirst({
+    where: eq(sessionDB.id, params.id as string),
+  });
 
-interface LoaderData {
-  session: Session;
-  summary: SessionSummary;
-}
+  assert(session, "Session not found");
 
-export const loader: LoaderFunction = async ({ params }) => {
-  const session = await getSessionById(params.id as string);
-  // const summary = await getSessionSummary(params.id as string);
-  const summary = {
-    shortSummary: "This is a short summary of the session",
-    longSummary: "This is a long summary of the session",
-  };
-  return json<LoaderData>({ session, summary });
+  return json({
+    session,
+    summaries: {
+      shortSummary: "This is a short summary of the session",
+      mediumSummary: "This is a medium summary of the session",
+      longSummary: "This is a long summary of the session",
+    },
+  });
 };
 
+// export const action: ActionFunction = async ({
+//   request,
+// }: LoaderFunctionArgs) => {
+//   const formData = await request.formData();
+//   const question = formData.get("question");
+//   console.log("TODO: ask question", question);
+//   return json({});
+// };
+
 export default function SessionPage() {
-  const { session, summary } = useLoaderData<LoaderData>();
-  const [showLongSummary, setShowLongSummary] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<string | null>(null);
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-
-  const fetcher = useFetcher();
-
-  const handleAskQuestion = () => {
-    console.log("TODO: ask question", question);
-    // fetcher.submit(
-    //   { question, sessionId: session.id },
-    //   { method: "post", action: "/api/ask-question" }
-    // );
-  };
+  const { session, summaries } = useLoaderData<typeof loader>();
+  console.log(session);
+  const [activeSummary, setActiveSummary] =
+    useState<keyof typeof summaries>("shortSummary");
 
   return (
     <div className="container mx-auto p-4">
@@ -63,89 +60,46 @@ export default function SessionPage() {
       >
         &larr; Back to Homepage
       </Link>
-      <h1 className="text-2xl font-bold mb-4">{session.title}</h1>
+      <h1 className="text-2xl font-bold mb-4">{session?.name}</h1>
 
-      {/* <VideoPlayer url={session.videoUrl} /> */}
+      <iframe
+        title="Parliament Wow"
+        src={`${session?.videoUrl?.replace(
+          "https://parliamentlive.tv/event/index/",
+          "https://videoplayback.parliamentlive.tv/Player/Index/"
+        )}?audioOnly=False&autoStart=True&script=True`}
+        width="100%"
+        height="500px"
+        allowFullScreen
+      />
 
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-2">Session Summary</h2>
-        <p>{summary.shortSummary}</p>
+      {/* A tab bar, with short/medium/long summaries   */}
+      <div className="flex gap-4 mt-4">
         <button
           type="button"
-          onClick={() => setShowLongSummary(!showLongSummary)}
-          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          onClick={() => setActiveSummary("shortSummary")}
         >
-          {showLongSummary ? "Hide Details" : "Show Details"}
+          Short Summary
         </button>
-      </div>
-
-      {showLongSummary && (
-        <div className="mt-4">
-          <ReactMarkdown
-            components={{
-              a: ({ node, ...props }) => (
-                <a
-                  {...props}
-                  // biome-ignore lint/a11y/useValidAnchor: <explanation>
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSelectedSection(props.href || null);
-                  }}
-                  className="text-blue-500 hover:underline cursor-pointer"
-                />
-              ),
-            }}
-          >
-            {summary.longSummary}
-          </ReactMarkdown>
-        </div>
-      )}
-
-      {selectedSection && (
-        <fetcher.Form
-          method="get"
-          action={`/api/session-details/${selectedSection}`}
-        >
-          <button
-            type="submit"
-            className="mt-4 bg-green-500 text-white px-4 py-2 rounded"
-          >
-            Load Details for Selected Section
-          </button>
-        </fetcher.Form>
-      )}
-
-      {fetcher.data?.details && (
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold mb-2">Section Details</h3>
-          <ReactMarkdown>{fetcher.data.details}</ReactMarkdown>
-        </div>
-      )}
-
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-2">Ask a Question</h2>
-        <input
-          type="text"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          className="w-full p-2 border rounded"
-          placeholder="Enter your question about the session"
-        />
         <button
           type="button"
-          onClick={handleAskQuestion}
-          className="mt-2 bg-purple-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          onClick={() => setActiveSummary("mediumSummary")}
         >
-          Ask
+          Medium Summary
+        </button>
+        <button
+          type="button"
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          onClick={() => setActiveSummary("longSummary")}
+        >
+          Long Summary
         </button>
       </div>
-
-      {fetcher.data && fetcher.data.answer && (
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold mb-2">Answer</h3>
-          <p>{fetcher.data.answer}</p>
-        </div>
-      )}
+      <div className="mt-4">
+        <ReactMarkdown>{summaries[activeSummary]}</ReactMarkdown>
+      </div>
     </div>
   );
 }
