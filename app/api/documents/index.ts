@@ -13,10 +13,10 @@ documents.post(
     z.object({
       id: z.string(),
       title: z.string(),
-      description: z.string(),
       url: z.string(),
       content: z.string(),
       publishDate: z.string(),
+      chunkId: z.string(),
     })
   ),
   async (c) => {
