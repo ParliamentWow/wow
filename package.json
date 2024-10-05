@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rm -rf dist && rm -rf public/dist",
     "deploy": "pnpm dotenv -- npm run clean && remix build && wrangler deploy",
-    "dev": "remix dev --manual -c \"wrangler dev\"",
+    "dev": "remix dev --manual -c \"wrangler dev --x-dev-env=false\"",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "drizzle:generate": "pnpm dotenv -- drizzle-kit  generate",
     "drizzle:migrate": "pnpm dotenv -- drizzle-kit  migrate",
