@@ -13,6 +13,7 @@ documents.post(
     z.object({
       id: z.string(),
       title: z.string(),
+      description: z.string(),
       url: z.string(),
       content: z.string(),
       publishDate: z.string(),
@@ -40,7 +41,7 @@ documents.post(
         body: JSON.stringify({
           upserts: [
             {
-              id: data.id,
+              id: `${data.id}-${data.chunkId}`,
               vector: response.data[0],
               attributes: {
                 page_content: data.content,
