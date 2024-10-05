@@ -19,7 +19,6 @@ sessions.get("/sessions", async (c) => {
     200
   );
 });
-
 sessions.get("/sessions/:id", async (c) => {
   const id = c.req.param("id");
   const db = getD1Client(c.env);
