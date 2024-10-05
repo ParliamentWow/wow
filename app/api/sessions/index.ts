@@ -1,8 +1,9 @@
 import { Hono } from "hono";
 import { getD1Client } from "../../data";
 import { Env } from "~/server";
-import { eq, InferSelectModel } from "drizzle-orm";
-import { sessionDB } from "~/data/schema";
+import { eq } from "drizzle-orm";
+import { insertSessionSchema, sessionDB } from "~/data/schema";
+import { zValidator } from "@hono/zod-validator";
 
 const sessions = new Hono<{ Bindings: Env }>();
 
@@ -35,17 +36,22 @@ sessions.get("/sessions/:id", async (c) => {
   );
 });
 
-sessions.post("/sessions", async (c) => {
+sessions.post(
+  "/sessions",
+  zValidator("json", insertSessionSchema),
+  async (c) => {
+    const data = await c.req.valid("json");
 
-    const data = await c.req.json() as InferSelectModel<typeof sessionDB>;
     const db = getD1Client(c.env);
     await db.insert(sessionDB).values(data);
+
     return c.json(
-        {
+      {
         message: "Session created",
-        },
-        201
+      },
+      201
     );
-});
+  }
+);
 
 export default sessions;
