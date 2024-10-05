@@ -145,3 +145,5 @@ backend/backend.egg-info
 __pycache__
 
 bills/**/*
+
+scratch/dest
