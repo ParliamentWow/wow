@@ -2,13 +2,6 @@ import { relations, sql } from "drizzle-orm";
 import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 
 
-export type Transcription = {
-    id: string,
-    content: string,
-    sessionId: string,
-    timestamp: Date
-}
-
 export const sessionDB = sqliteTable('session', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),

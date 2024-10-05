@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { getD1Client } from "../../data";
 import { Env } from "~/server";
-import { eq } from "drizzle-orm";
-import { Transcription, transcriptionDB } from "~/data/schema";
+import { eq, InferInsertModel } from "drizzle-orm";
+import { transcriptionDB } from "~/data/schema";
 
 const transcriptions = new Hono<{ Bindings: Env }>();
 
@@ -37,7 +37,7 @@ transcriptions.get("/transcriptions/:id", async (c) => {
 
 transcriptions.post("/transcriptions", async (c) => {
 
-    const data = await c.req.json() as Transcription;
+    const data = await c.req.json() as InferInsertModel<typeof transcriptionDB>;
     const db = getD1Client(c.env);
     await db.insert(transcriptionDB).values(data);
     return c.json(
