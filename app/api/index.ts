@@ -10,7 +10,7 @@ api.onError((err, c) => {
 });
 
 api.get("/api", (c) => {
-  return c.text("Parliment wow!");
+  return c.text("Parliment Wow!");
 });
 
 api.route("/api", sessions);
