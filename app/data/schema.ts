@@ -24,7 +24,7 @@ export const sessionDB = sqliteTable("session", {
 });
 
 export const insertSessionSchema = createInsertSchema(sessionDB, {
-  timestamp: z.date(z.pipeline(z.string(), z.date())),
+  timestamp: z.string(z.pipeline(z.string(), z.date())),
   documents: z.array(
     z.object({
       title: z.string(),

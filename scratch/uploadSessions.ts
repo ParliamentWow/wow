@@ -2,9 +2,7 @@ import { hc } from "hono/client";
 import { SessionRoute } from "../app/api/sessions";
 import file from "./file.json";
 import { readFile } from "fs/promises";
-const client = hc<SessionRoute>(
-  "https://parliament-wow.threepointone.workers.dev/api"
-);
+const client = hc<SessionRoute>("http://localhost:8787/api");
 
 type Bill = {
   id: string;
