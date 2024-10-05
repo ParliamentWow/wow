@@ -17,9 +17,10 @@ export const sessionRelations = relations(sessionDB, ({ many }) => ({
 
 export const transcriptionDB = sqliteTable('transcriptions', {
   id: text('id').primaryKey(),
-  sessionId: text('sessionId').notNull(),
+  sessionId: text('sessionId').notNull(), // iso date string
   content: text('content').notNull(),
-  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
+  timestamp_start: integer('timestamp_start', { mode: 'timestamp' }).notNull(),
+  timestamp_end: integer('timestamp_end', { mode: 'timestamp' }).notNull(),
 });
 
 export const transcriptionRelations = relations(transcriptionDB, ({ one }) => ({
