@@ -1,10 +1,8 @@
 import { Link } from "@remix-run/react";
+import type { InferSelectModel } from "drizzle-orm";
+import type { sessionDB } from "~/data/schema";
 
-interface Session {
-  id: string;
-  title: string;
-  date: string;
-}
+export type Session = InferSelectModel<typeof sessionDB>;
 
 interface SessionListProps {
   sessions: Session[];
@@ -19,7 +17,7 @@ export default function SessionList({ sessions }: SessionListProps) {
             to={`/session/${session.id}`}
             className="text-blue-600 hover:text-blue-800"
           >
-            {session.title} - {new Date(session.date).toLocaleString()}
+            {session.name}
           </Link>
         </li>
       ))}

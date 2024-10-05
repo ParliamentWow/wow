@@ -79,14 +79,27 @@ async function runBillScraper() {
   while (hasBill) {
     let promises: Promise<undefined>[] = [];
 
-    const batch = [billId, billId - 1, billId - 2, billId - 3, billId - 4, billId - 5, billId - 6, billId - 7, billId - 8, billId - 9];
+    const batch = [
+      billId,
+      billId - 1,
+      billId - 2,
+      billId - 3,
+      billId - 4,
+      billId - 5,
+      billId - 6,
+      billId - 7,
+      billId - 8,
+      billId - 9,
+    ];
 
     console.log(`Scraping batch: ${batch}`);
     for (const bill of batch) {
-      promises.push(scrapeBill(bill).catch((e) => {
-        console.error(bill);
-        return undefined;
-      }));
+      promises.push(
+        scrapeBill(bill).catch((e) => {
+          console.error(bill);
+          return undefined;
+        })
+      );
     }
 
     await Promise.all(promises);
@@ -101,7 +114,7 @@ async function runBillScraper() {
 
   Object.entries(sessions).forEach(([key, value]) => {
     writeFileSync(`scratch/bills/${key}.json`, JSON.stringify(value, null, 4));
-  })
+  });
 }
 
 runBillScraper();
@@ -138,46 +151,41 @@ async function scrapeBill(billId: number) {
     >[];
 
     for (const sitting of readableSittings) {
-        const date = new Date(sitting.session).toISOString().split("T")[0];
-      if (sessions[date]) {
-        sessions[date].push({
-          id: sitting.id as string,
-          name: billTitle,
-          stage: sitting.stage,
-          documents: readablePublications,
-        });
-      } else {
-        sessions[date] = [
+      const date = new Date(sitting.session).toISOString().split("T")[0];
+
+      writeFileSync(
+        `scratch/bills/bills/${billId}.json`,
+        JSON.stringify(
           {
+            billId: billId,
             id: sitting.id as string,
             name: billTitle,
             stage: sitting.stage,
             documents: readablePublications,
           },
-        ];
-      }
+          null,
+          4
+        )
+      );
     }
   } else {
-    if (parsed.rss.channel.item.category._text === "Sitting") {
-      const sitting = parseSittingToReadable(parsed.rss.channel.item);
-      const date = new Date(sitting.session).toISOString().split("T")[0];
-      if (sessions[date]) {
-        sessions[date].push({
-          id: sitting.id as string,
-          name: billTitle,
-          stage: sitting.stage,
-          documents: [],
-        });
-      } else {
-        sessions[date] = [
-          {
-            id: sitting.id as string,
-            name: billTitle,
-            stage: sitting.stage,
-            documents: [],
-          },
-        ];
-      }
-    }
+    // if (parsed.rss.channel.item.category._text === "Sitting") {
+    //   const sitting = parseSittingToReadable(parsed.rss.channel.item);
+    //   const date = new Date(sitting.session).toISOString().split("T")[0];
+    //   writeFileSync(
+    //     `scratch/bills/${billId}.json`,
+    //     JSON.stringify(
+    //       {
+    //         billId: billId,
+    //         id: sitting.id as string,
+    //         name: billTitle,
+    //         stage: sitting.stage,
+    //         documents: []],
+    //       },
+    //       null,
+    //       4
+    //     )
+    //   );
+    // }
   }
 }

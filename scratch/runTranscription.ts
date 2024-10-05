@@ -16,7 +16,7 @@ async function runTranscription() {
     // base_page_url: str, api_url: str, session_id: str
     const transcriptionResponse = await fetch(
       `${url}?${new URLSearchParams({
-        base_page_url: session.vidioUrl,
+        base_page_url: session.videoUrl,
         api_url:
           "https://parliament-wow.threepointone.workers.dev/api/transcriptions",
         session_id: session.id,

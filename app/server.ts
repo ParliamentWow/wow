@@ -1,7 +1,7 @@
+import type { Ai } from "@cloudflare/workers-types/experimental";
 import { createRequestHandler, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
 import api from "./api";
-import { Ai } from "@cloudflare/workers-types/experimental";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type Env = {
