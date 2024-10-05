@@ -54,7 +54,7 @@ transcriptions.post(
       throw new Error("TURBOPUFFER_KEY not found");
     }
     const pufResponse = await fetch(
-      `https://api.turbopuffer.com/v1/vectors/${data.id}`,
+      `https://api.turbopuffer.com/v1/vectors/${data.sessionId}`,
       {
         method: "POST",
         headers: {

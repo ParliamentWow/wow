@@ -36,12 +36,12 @@ sessions.get("/sessions/:id", async (c) => {
   );
 });
 
-sessions.post(
+const sessionRoute = sessions.post(
   "/sessions",
   zValidator("json", insertSessionSchema),
   async (c) => {
     const data = await c.req.valid("json");
-
+    console.log(data);
     const db = getD1Client(c.env);
     await db.insert(sessionDB).values(data);
 
@@ -53,5 +53,7 @@ sessions.post(
     );
   }
 );
+
+export type SessionRoute = typeof sessionRoute;
 
 export default sessions;

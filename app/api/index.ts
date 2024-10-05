@@ -15,6 +15,7 @@ api.get("/api", (c) => {
 
 api.route("/api", sessions);
 api.route("/api", transcriptions);
-api.route("/api", documents);
+const route = api.route("/api", documents);
 
+export type AppType = typeof route;
 export default api;
