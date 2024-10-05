@@ -17,7 +17,7 @@ export default function SessionList({ sessions }: SessionListProps) {
             to={`/session/${session.id}`}
             className="text-blue-600 hover:text-blue-800"
           >
-            {session.name} - {new Date(session.timestamp).toLocaleString()}
+            {session.name}
           </Link>
         </li>
       ))}

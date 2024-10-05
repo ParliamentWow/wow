@@ -29,11 +29,6 @@ export const loader = async ({ params, context }: LoaderFunctionArgs) => {
 
   return json({
     session,
-    summaries: {
-      shortSummary: "This is a short summary of the session",
-      mediumSummary: "This is a medium summary of the session",
-      longSummary: "This is a long summary of the session",
-    },
   });
 };
 
@@ -47,10 +42,24 @@ export const loader = async ({ params, context }: LoaderFunctionArgs) => {
 // };
 
 export default function SessionPage() {
-  const { session, summaries } = useLoaderData<typeof loader>();
-  console.log(session);
-  const [activeSummary, setActiveSummary] =
-    useState<keyof typeof summaries>("shortSummary");
+  const { session } = useLoaderData<typeof loader>();
+  const [activeBill, setActiveBill] = useState<string | null>(null);
+
+  const [summaries, setSummaries] = useState<
+    Record<string, Record<"short" | "medium" | "long", string>>
+  >({});
+
+  const [activeSummary, setActiveSummary] = useState<
+    "short" | "medium" | "long"
+  >("short");
+
+  const handleZoom = (
+    billId: string,
+    summaryType: "short" | "medium" | "long"
+  ) => {
+    setActiveBill(billId);
+    setActiveSummary(summaryType);
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -73,32 +82,90 @@ export default function SessionPage() {
         allowFullScreen
       />
 
-      {/* A tab bar, with short/medium/long summaries   */}
-      <div className="flex gap-4 mt-4">
-        <button
-          type="button"
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={() => setActiveSummary("shortSummary")}
-        >
-          Short Summary
-        </button>
-        <button
-          type="button"
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={() => setActiveSummary("mediumSummary")}
-        >
-          Medium Summary
-        </button>
-        <button
-          type="button"
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={() => setActiveSummary("longSummary")}
-        >
-          Long Summary
-        </button>
-      </div>
+      {/* list out the bills in a session */}
       <div className="mt-4">
-        <ReactMarkdown>{summaries[activeSummary]}</ReactMarkdown>
+        <h2 className="text-xl font-bold mb-2">Bills</h2>
+        <ul className="list-disc">
+          {session?.bills.map((bill) => (
+            // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+            <li
+              key={bill.id}
+              style={{
+                marginBottom: 20,
+              }}
+              onClick={() => {
+                if (activeBill !== bill.id) {
+                  setActiveBill(bill.id);
+                  setActiveSummary("short");
+                }
+              }}
+            >
+              <div className="flex">
+                <span className="font-bold cursor-pointer">{bill.name}</span>
+                <span
+                  className="text-gray-400 italic"
+                  style={{
+                    paddingLeft: 10,
+                  }}
+                >
+                  ({bill.stage})
+                </span>
+              </div>
+              {activeBill === bill.id && (
+                <div className="mt-4 relative">
+                  <div
+                    className="flex items-center space-x-2 mb-2 absolute"
+                    style={{ left: -40, top: -40, flexDirection: "column" }}
+                  >
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                      style={{
+                        display: "block",
+                        width: 20,
+                        height: 20,
+                        margin: 3,
+                        lineHeight: 0.8,
+                        fontSize: 8,
+                      }}
+                      onClick={() => {
+                        handleZoom(
+                          bill.id,
+                          activeSummary === "short" ? "medium" : "long"
+                        );
+                      }}
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                      style={{
+                        display: "block",
+                        width: 20,
+                        height: 20,
+                        margin: 3,
+                        lineHeight: 0.8,
+                        fontSize: 8,
+                      }}
+                      onClick={() => {
+                        handleZoom(
+                          bill.id,
+                          activeSummary === "long" ? "medium" : "short"
+                        );
+                      }}
+                    >
+                      -
+                    </button>
+                  </div>
+                  <ReactMarkdown>
+                    {`Showing ${activeSummary} summary for ${bill.name}:`}
+                  </ReactMarkdown>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
