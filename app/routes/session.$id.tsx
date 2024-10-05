@@ -1,5 +1,5 @@
 import { type LoaderFunction, json } from "@remix-run/cloudflare";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import Transcript from "~/components/Transcript";
 import VideoPlayer from "~/components/VideoPlayer";
@@ -31,6 +31,12 @@ export default function SessionPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Link
+        to="/"
+        className="text-blue-500 hover:text-blue-700 mb-4 inline-block"
+      >
+        &larr; Back to Homepage
+      </Link>
       <h1 className="text-3xl font-bold mb-6">{session.title}</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="video-container">
