@@ -1,4 +1,20 @@
 {
+  "liveSessions": [
+    {
+      "id": "ls1",
+      "title": "Emergency Response Committee Meeting",
+      "date": "2024-03-14T15:00:00Z",
+      "videoUrl": "https://example.com/live/emergency-response-committee",
+      "isLive": true
+    },
+    {
+      "id": "ls2",
+      "title": "Public Safety Hearing",
+      "date": "2024-03-14T16:30:00Z",
+      "videoUrl": "https://example.com/live/public-safety-hearing",
+      "isLive": true
+    }
+  ],
   "upcomingSessions": [
     {
       "id": "us1",
