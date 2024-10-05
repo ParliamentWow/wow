@@ -45,7 +45,7 @@ async function uploadSessions() {
         "bills",
         bills.map((el) => el.name)
       );
-      await client.sessions.$post({
+      const res = await client.sessions.$post({
         json: {
           id,
           name: `${session.room} - ${session.date}`,
@@ -63,6 +63,9 @@ async function uploadSessions() {
           ),
         },
       });
+
+      const response = await res.json();
+      console.log(response.error);
     } catch (e) {
       console.log(e);
     }
