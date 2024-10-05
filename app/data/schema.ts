@@ -9,7 +9,7 @@ export type Transcription = {
 }
 
 
-export const transcriptions = sqliteTable('transcriptions', {
+export const transcriptionDB = sqliteTable('transcriptions', {
   id: text('id').primaryKey(),
   content: text('content').notNull(),
   timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
