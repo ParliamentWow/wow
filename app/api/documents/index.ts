@@ -13,6 +13,7 @@ documents.post(
     z.object({
       id: z.string(),
       title: z.string(),
+      description: z.string(),
       url: z.string(),
       content: z.string(),
       publishDate: z.string(),
@@ -30,7 +31,7 @@ documents.post(
       throw new Error("TURBOPUFFER_KEY not found");
     }
     const pufResponse = await fetch(
-      `https://api.turbopuffer.com/v1/vectors/${data.id}`,
+      `https://api.turbopuffer.com/v1/vectors/bills`,
       {
         method: "POST",
         headers: {
@@ -40,7 +41,7 @@ documents.post(
         body: JSON.stringify({
           upserts: [
             {
-              id: data.id,
+              id: `${data.id}-${data.chunkId}`,
               vector: response.data[0],
               attributes: {
                 page_content: data.content,
