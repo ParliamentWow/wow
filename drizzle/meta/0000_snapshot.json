@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "2aa1097e-1339-4284-b208-b4d6f4aa2f71",
+  "id": "3e31df3c-7d79-42f5-8ff3-3171ba19b651",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "session": {
@@ -35,9 +35,23 @@
           "notNull": true,
           "autoincrement": false
         },
+        "room": {
+          "name": "room",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "timestamp": {
           "name": "timestamp",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bills": {
+          "name": "bills",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
