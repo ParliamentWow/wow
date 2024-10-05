@@ -35,13 +35,15 @@ export const insertSessionSchema = createInsertSchema(sessionDB, {
       id: z.string(),
       name: z.string(),
       stage: z.string(),
-      documents: z.object({
-        title: z.string(),
-        description: z.string(),
-        format: z.string(),
-        url: z.string(),
-        pubDate: z.string(),
-      }),
+      documents: z.array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+          format: z.string(),
+          url: z.string(),
+          pubDate: z.string(),
+        })
+      ),
     })
   ),
 });
