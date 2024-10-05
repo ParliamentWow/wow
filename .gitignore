@@ -142,4 +142,6 @@ node_modules
 
 backend/backend.egg-info
 **/.python-version
-**/*.cpython-311
+__pycache__
+
+bills/**/*
