@@ -137,3 +137,7 @@ node_modules
 .env
 .dev.vars
 .wrangler
+
+backend/backend.egg-info
+**/.python-version
+**/*.cpython-311
