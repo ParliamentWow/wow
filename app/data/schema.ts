@@ -5,7 +5,7 @@ import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 export type Transcription = {
     id: string,
     content: string,
-    timestamp: number
+    timestamp: Date
 }
 
 

@@ -2,7 +2,8 @@ import { createRequestHandler, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
 import api from './api'
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-type Env = {
+export type Env = {
+  DB: D1Database
   // Add your bindings here
 };
 
