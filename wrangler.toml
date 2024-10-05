@@ -8,3 +8,9 @@ assets = { directory = "./public" }
 
 [observability]
 enabled = true
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "parliament-wow"
+database_id = "f1ac1924-8d91-49dd-aada-6c616cfd45c8"
+migrations_dir = "drizzle/"

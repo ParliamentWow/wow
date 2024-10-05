@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === "development") {
 export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url);
-    
+    console.log(url)
     if (url.pathname.startsWith('/api')) {
       return api.fetch(request, env)
     }
