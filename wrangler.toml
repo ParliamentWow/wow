@@ -1,7 +1,7 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "parliament-wow"
 compatibility_date = "2024-09-25"
-
+compatibility_flags = ["nodejs_compat"]
 main = "./dist/index.js"
 assets = { directory = "./public" }
 
