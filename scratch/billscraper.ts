@@ -99,7 +99,9 @@ async function runBillScraper() {
 
   console.log(sessions);
 
-  writeFileSync("bills.json", JSON.stringify(sessions, null, 4));
+  Object.entries(sessions).forEach(([key, value]) => {
+    writeFileSync(`scratch/bills/${key}.json`, JSON.stringify(value, null, 4));
+  })
 }
 
 runBillScraper();

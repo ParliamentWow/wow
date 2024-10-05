@@ -10,5 +10,6 @@ CREATE TABLE `transcriptions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`sessionId` text NOT NULL,
 	`content` text NOT NULL,
-	`timestamp` integer NOT NULL
+	`timestamp_start` integer NOT NULL,
+	`timestamp_end` integer NOT NULL
 );

@@ -1,9 +1,9 @@
 import { createRequestHandler, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
-import api from './api'
+import api from "./api";
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type Env = {
-  DB: D1Database
+  DB: D1Database;
   // Add your bindings here
 };
 
@@ -22,9 +22,8 @@ if (process.env.NODE_ENV === "development") {
 export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url);
-    console.log(url)
-    if (url.pathname.startsWith('/api')) {
-      return api.fetch(request, env)
+    if (url.pathname.startsWith("/api")) {
+      return api.fetch(request, env);
     }
     return handleRemixRequest(request, {
       env: env,

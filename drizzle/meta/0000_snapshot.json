@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ff753c31-c256-4bf4-9237-77afa652ad80",
+  "id": "2aa1097e-1339-4284-b208-b4d6f4aa2f71",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "session": {
@@ -72,8 +72,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "timestamp": {
-          "name": "timestamp",
+        "timestamp_start": {
+          "name": "timestamp_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp_end": {
+          "name": "timestamp_end",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

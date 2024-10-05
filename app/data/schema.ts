@@ -1,7 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
-
+import { z } from "zod"
 
 export const sessionDB = sqliteTable('session', {
     id: text('id').primaryKey(),
@@ -18,12 +18,14 @@ export const sessionRelations = relations(sessionDB, ({ many }) => ({
 
 export const transcriptionDB = sqliteTable('transcriptions', {
   id: text('id').primaryKey(),
-  sessionId: text('sessionId').notNull(),
+  sessionId: text('sessionId').notNull(), // iso date string
   content: text('content').notNull(),
-  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
+  timestampStart: integer('timestamp_start').notNull(),
+  timestampEnd: integer('timestamp_end').notNull(),
 });
 
-const insertTranscription = createInsertSchema(transcriptionDB);
+export const insertTranscriptionSchema = createInsertSchema(transcriptionDB);
+
 
 export const transcriptionRelations = relations(transcriptionDB, ({ one }) => ({
     session: one(sessionDB, {

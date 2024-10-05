@@ -1,0 +1,95 @@
+{
+  "liveSessions": [
+    {
+      "id": "ls1",
+      "title": "Emergency Response Committee Meeting",
+      "date": "2024-03-14T15:00:00Z",
+      "videoUrl": "https://example.com/live/emergency-response-committee",
+      "isLive": true
+    },
+    {
+      "id": "ls2",
+      "title": "Public Safety Hearing",
+      "date": "2024-03-14T16:30:00Z",
+      "videoUrl": "https://example.com/live/public-safety-hearing",
+      "isLive": true
+    }
+  ],
+  "upcomingSessions": [
+    {
+      "id": "us1",
+      "title": "Budget Debate 2024",
+      "date": "2024-03-15T10:00:00Z",
+      "videoUrl": "https://example.com/live/budget-debate-2024",
+      "isLive": false
+    },
+    {
+      "id": "us2",
+      "title": "Environmental Policy Review",
+      "date": "2024-03-18T14:30:00Z",
+      "videoUrl": "https://example.com/live/environmental-policy-review",
+      "isLive": false
+    },
+    {
+      "id": "us3",
+      "title": "Healthcare Reform Discussion",
+      "date": "2024-03-22T09:00:00Z",
+      "videoUrl": "https://example.com/live/healthcare-reform-discussion",
+      "isLive": false
+    }
+  ],
+  "pastSessions": [
+    {
+      "id": "ps1",
+      "title": "Education Bill Reading",
+      "date": "2024-02-28T11:00:00Z",
+      "videoUrl": "https://example.com/archive/education-bill-reading",
+      "isLive": false
+    },
+    {
+      "id": "ps2",
+      "title": "Foreign Policy Debate",
+      "date": "2024-03-05T13:45:00Z",
+      "videoUrl": "https://example.com/archive/foreign-policy-debate",
+      "isLive": false
+    },
+    {
+      "id": "ps3",
+      "title": "Transportation Infrastructure Hearing",
+      "date": "2024-03-10T10:30:00Z",
+      "videoUrl": "https://example.com/archive/transportation-infrastructure-hearing",
+      "isLive": false
+    }
+  ],
+  "sessionDetails": {
+    "us1": {
+      "id": "us1",
+      "title": "Budget Debate 2024",
+      "date": "2024-03-15T10:00:00Z",
+      "videoUrl": "https://example.com/live/budget-debate-2024",
+      "isLive": false,
+      "transcript": "The Budget Debate 2024 will begin shortly. Please stand by.",
+      "chatMessages": []
+    },
+    "ps1": {
+      "id": "ps1",
+      "title": "Education Bill Reading",
+      "date": "2024-02-28T11:00:00Z",
+      "videoUrl": "https://example.com/archive/education-bill-reading",
+      "isLive": false,
+      "transcript": "Speaker: The House will come to order. Today we are here to discuss the Education Bill...",
+      "chatMessages": [
+        {
+          "id": "cm1",
+          "user": "John Doe",
+          "text": "Excited to see the outcome of this bill!"
+        },
+        {
+          "id": "cm2",
+          "user": "Jane Smith",
+          "text": "I hope they address the funding issues for rural schools."
+        }
+      ]
+    }
+  }
+}
