@@ -138,6 +138,8 @@ node_modules
 .dev.vars
 .wrangler
 
+.DS_Store
+
 backend/backend.egg-info
 **/.python-version
 **/*.cpython-311
