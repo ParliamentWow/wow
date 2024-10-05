@@ -1,13 +1,13 @@
-import { eq } from "drizzle-orm";
+import { type InferInsertModel, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { type Transcription, transcriptionDB } from "~/data/schema";
+import { transcriptionDB } from "~/data/schema";
 import type { Env } from "~/server";
-import { getDBClient } from "../../data";
+import { getD1Client } from "../../data";
 
 const transcriptions = new Hono<{ Bindings: Env }>();
 
 transcriptions.get("/transcriptions", async (c) => {
-  const db = getDBClient(c.env);
+  const db = getD1Client(c.env);
   const transcriptions = await db.query.transcriptionDB.findMany();
 
   return c.json(
@@ -21,7 +21,7 @@ transcriptions.get("/transcriptions", async (c) => {
 
 transcriptions.get("/transcriptions/:id", async (c) => {
   const id = c.req.param("id");
-  const db = getDBClient(c.env);
+  const db = getD1Client(c.env);
   const transcription = await db.query.transcriptionDB.findFirst({
     where: eq(transcriptionDB.id, id),
   });
@@ -36,8 +36,8 @@ transcriptions.get("/transcriptions/:id", async (c) => {
 });
 
 transcriptions.post("/transcriptions", async (c) => {
-  const data = (await c.req.json()) as Transcription;
-  const db = getDBClient(c.env);
+  const data = (await c.req.json()) as InferInsertModel<typeof transcriptionDB>;
+  const db = getD1Client(c.env);
   await db.insert(transcriptionDB).values(data);
   return c.json(
     {
