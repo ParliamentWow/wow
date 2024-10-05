@@ -4,7 +4,7 @@ import sessions from './sessions';
 const api = new Hono();
 
 api.get('/api', (c) => { 
-    return c.text('Hello World');
+    return c.text('Parliment wow!');
 });
 
 api.route('/api', sessions)

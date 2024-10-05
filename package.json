@@ -13,14 +13,18 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.3.0",
     "@remix-run/cloudflare": "^2.12.1",
     "@remix-run/react": "^2.12.1",
     "dotenv-cli": "^7.4.2",
     "drizzle-orm": "^0.33.0",
+    "drizzle-zod": "^0.5.1",
     "hono": "^4.6.3",
     "isbot": "^5.1.17",
+    "p-retry": "^6.2.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241004.0",
