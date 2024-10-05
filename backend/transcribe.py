@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 app = App("parliament-live-transcripts")
-image = Image.debian_slim().pip_install("requests", "pydantic")
+image = Image.debian_slim().pip_install("requests", "pydantic", "ulid-py", "langchain_text_splitters")
 browser_image = Image.debian_slim().pip_install("selenium", "requests", "webdriver-manager")    .run_commands(
         "apt-get update",
         "apt-get install -y chromium chromium-driver",
@@ -24,21 +24,16 @@ dict = Dict.from_name("parliament-live-transcripts", create_if_missing=True)
 
 
 class SubtitleEntry(BaseModel):
-    id: int
-    timestamp_start: str
-    timestamp_end: str
+    sessionId: str
+    id: str
+    timestampStart: int # TODO: milliseconds from start of session
+    timestampEnd: int # TODO: milliseconds from start of session
     content: str
 
 
-def parse_timestamp(timestamp: str) -> int:
-    # Convert timestamp to milliseconds for easier comparison
-    h, m, s = timestamp.split(':')
-    s, ms = s.split('.')
-    return int(h) * 3600000 + int(m) * 60000 + int(s) * 1000 + int(ms)
-
-
-@app.function(image=image)
-def fetch_subtitles(base_url: str, index: int) -> SubtitleEntry:
+@app.function(image=image, timeout=50000)
+def fetch_subtitles(base_url: str, index: int, session_id: str) -> SubtitleEntry:
+    import ulid
     url = f"{base_url}-{index}.webvtt"
 
     try:
@@ -57,7 +52,6 @@ def fetch_subtitles(base_url: str, index: int) -> SubtitleEntry:
             
             # Check if the line is an ID (purely numeric)
             if line.isdigit():
-                subtitle_id = int(line)
                 i += 1
                 
                 # Next line should be the timestamp
@@ -65,7 +59,6 @@ def fetch_subtitles(base_url: str, index: int) -> SubtitleEntry:
                     timestamp_line = lines[i].strip()
                     match = re.match(r'(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})', timestamp_line)
                     if match:
-                        start_time, end_time = match.groups()
                         i += 1
                         
                         # Collect the content
@@ -75,28 +68,23 @@ def fetch_subtitles(base_url: str, index: int) -> SubtitleEntry:
                             i += 1
                         
                         subtitle_entry = SubtitleEntry(
-                            id=subtitle_id,
-                            timestamp_start=start_time,
-                            timestamp_end=end_time,
-                            content=" ".join(content)
+                            id=str(ulid.new()),
+                            timestampStart=0,
+                            timestampEnd=0,
+                            content=" ".join(content),
+                            sessionId=session_id
                         )
 
-                        print(subtitle_entry)
                         return subtitle_entry
             i += 1
 
     except Exception as e:
-        print(f"Failed to fetch subtitles. Possibly reached the end at index {index}.")
+        print(f"Failed to fetch subtitles. Possibly reached the end at index {index}. {e}")
         dict["stop_count"] += 1
         return
 
 @app.function(image=image)
-def send_to_api(data: SubtitleEntry | None) -> None:
-    if data is None:
-        return
-
-    api_url: str = os.getenv('API_URL', 'https://api.example.com/subtitles')
-
+def send_to_api(data: SubtitleEntry, api_url: str) -> None:
     try:
         response = requests.post(api_url, json=data.dict())
         response.raise_for_status()
@@ -141,7 +129,7 @@ def extract_vtt_url(base_page_url: str) -> str:
         return driver
 
 
-    def capture_vtt_urls(driver, duration=60):
+    def capture_vtt_urls(driver, duration=10):
         vtt_urls = []
         start_time = time.time()
         while time.time() - start_time < duration:
@@ -170,7 +158,7 @@ def extract_vtt_url(base_page_url: str) -> str:
         driver.get(base_page_url)
         time.sleep(5)
             
-        vtt_urls = capture_vtt_urls(driver, duration=30)
+        vtt_urls = capture_vtt_urls(driver)
         
         if vtt_urls:
             logger.info(f"Found VTT URLs: {vtt_urls}")
@@ -188,15 +176,38 @@ def extract_vtt_url(base_page_url: str) -> str:
     finally:
         driver.quit()
 
+def dedup_and_chunk(subtitles: list[SubtitleEntry]) -> list[SubtitleEntry]:
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    unique_content = " ".join(dict.fromkeys(s.content for s in subtitles))
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=5000,
+        chunk_overlap=100,
+    )
+    chunks = splitter.split_text(unique_content)
+    
+    return [
+        SubtitleEntry(
+            id=f"{subtitles[0].sessionId}-chunk-{i}",
+            sessionId=subtitles[0].sessionId,
+            timestampStart=0,
+            timestampEnd=0,
+            content=chunk
+        ) for i, chunk in enumerate(chunks)
+    ]
 
-@app.function(image=image)
-def controller(base_page_url: str) -> None:
+
+@app.function(image=image, timeout=80000)
+def controller(base_page_url: str, api_url: str, session_id: str | None = None) -> None:
     """
     Controller function to manage the workflow.
     
     Args:
         base_page_url (str): The base page URL to extract the VTT URL.
     """
+
+    if session_id is None:
+        raise NotImplementedError("Session ID is required in date timestamp format")
+    
     try:
         VTT_BASE_URL = extract_vtt_url.remote(base_page_url)
         print(f"Extracted VTT Base URL: {VTT_BASE_URL}")
@@ -210,12 +221,15 @@ def controller(base_page_url: str) -> None:
 
     while True:
         batch_indices: list[int] = list(range((current_batch - 1) * batch_size + 1, current_batch * batch_size + 1))
+        session_ids = [session_id for _ in batch_indices]
+        url_list = [VTT_BASE_URL for _ in batch_indices]
         print(f"Processing batch {current_batch}: Indices {batch_indices[0]} to {batch_indices[-1]}")
 
+        subtitles = []
         try:
-            url_list = [VTT_BASE_URL for _ in batch_indices]
-            for subtitle in fetch_subtitles.map(url_list, batch_indices):
-                send_to_api.remote(subtitle)
+            for subtitle in fetch_subtitles.map(url_list, batch_indices, session_ids):
+                if subtitle is not None:
+                    subtitles.append(subtitle)
             current_batch += 1
             if dict["stop_count"] >= batch_size:
                 print("Reached the end of the subtitles.")
@@ -224,6 +238,11 @@ def controller(base_page_url: str) -> None:
             print(f"Finished with batch {current_batch} due to error: {e}")
             break
 
+    chunks = dedup_and_chunk(subtitles)
+    for chunk in chunks:
+        send_to_api.remote(chunk, api_url)
+
+
 
 @app.local_entrypoint()
 def main() -> None:
@@ -231,4 +250,6 @@ def main() -> None:
     Local entry point for the Modal app.
     """
     BASE_PAGE_URL = "https://videoplayback.parliamentlive.tv/Player/Index/d439fb88-5c5c-48c5-a0db-c715e09f78d2"
-    controller.remote(BASE_PAGE_URL)
+    API_URL = "https://parliament-wow.threepointone.workers.dev/api/transcriptions"
+    SESSION_ID = "2024-09-10"
+    controller.remote(BASE_PAGE_URL, API_URL, SESSION_ID)

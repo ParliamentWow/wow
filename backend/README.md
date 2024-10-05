@@ -16,5 +16,5 @@ uv run modal setup
 # Run
 
 ```
-uv run transcribe.py
+uv run modal run transcribe.py
 ```
