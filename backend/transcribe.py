@@ -2,8 +2,7 @@ import logging
 import requests
 import re
 import json
-import os
-from modal import App, Dict, Image
+from modal import App, Image
 from pydantic import BaseModel
 import time
 import re
@@ -20,7 +19,6 @@ browser_image = Image.debian_slim().pip_install("selenium", "requests", "webdriv
         "apt-get clean",
         "rm -rf /var/lib/apt/lists/*"
     )
-dict = Dict.from_name("parliament-live-transcripts", create_if_missing=True)
 
 
 class SubtitleEntry(BaseModel):
@@ -36,52 +34,48 @@ def fetch_subtitles(base_url: str, index: int, session_id: str) -> SubtitleEntry
     import ulid
     url = f"{base_url}-{index}.webvtt"
 
-    try:
-        response = requests.get(url)
-        if not response.ok:
-            raise Exception(f"Failed to fetch subtitles. Possibly reached the end at index {index}.")
-        content = response.text
-        if not content:
-            raise Exception(f"Failed to fetch subtitles. Possibly reached the end at index {index}.")
-        
-        lines = content.split('\n')
-        
-        i = 0
-        while i < len(lines):
-            line = lines[i].strip()
-            
-            # Check if the line is an ID (purely numeric)
-            if line.isdigit():
-                i += 1
-                
-                # Next line should be the timestamp
-                if i < len(lines):
-                    timestamp_line = lines[i].strip()
-                    match = re.match(r'(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})', timestamp_line)
-                    if match:
-                        i += 1
-                        
-                        # Collect the content
-                        content = []
-                        while i < len(lines) and lines[i].strip() and not lines[i].strip().isdigit():
-                            content.append(lines[i].strip())
-                            i += 1
-                        
-                        subtitle_entry = SubtitleEntry(
-                            id=str(ulid.new()),
-                            timestampStart=0,
-                            timestampEnd=0,
-                            content=" ".join(content),
-                            sessionId=session_id
-                        )
 
-                        return subtitle_entry
+    response = requests.get(url)
+    if not response.ok:
+        raise Exception(f"Failed to fetch subtitles. Possibly reached the end at index {index}.")
+    content = response.text
+    if not content:
+        raise Exception(f"Failed to fetch subtitles. Possibly reached the end at index {index}.")
+    
+    lines = content.split('\n')
+    
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        # Check if the line is an ID (purely numeric)
+        if line.isdigit():
             i += 1
+            
+            # Next line should be the timestamp
+            if i < len(lines):
+                timestamp_line = lines[i].strip()
+                match = re.match(r'(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})', timestamp_line)
+                if match:
+                    i += 1
+                    
+                    # Collect the content
+                    content = []
+                    while i < len(lines) and lines[i].strip() and not lines[i].strip().isdigit():
+                        content.append(lines[i].strip())
+                        i += 1
+                    
+                    subtitle_entry = SubtitleEntry(
+                        id=str(ulid.new()),
+                        timestampStart=0,
+                        timestampEnd=0,
+                        content=" ".join(content),
+                        sessionId=session_id
+                    )
 
-    except Exception as e:
-        print(f"Failed to fetch subtitles. Possibly reached the end at index {index}. {e}")
-        dict["stop_count"] += 1
-        return
+                    return subtitle_entry
+        i += 1
+
 
 @app.function(image=image)
 def send_to_api(data: SubtitleEntry, api_url: str) -> None:
@@ -178,7 +172,7 @@ def extract_vtt_url(base_page_url: str) -> str:
 
 def dedup_and_chunk(subtitles: list[SubtitleEntry]) -> list[SubtitleEntry]:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
-    unique_content = " ".join(dict.fromkeys(s.content for s in subtitles))
+    unique_content = " ".join(set(s.content for s in subtitles))
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=5000,
         chunk_overlap=100,
@@ -203,10 +197,11 @@ def controller(base_page_url: str, api_url: str, session_id: str | None = None) 
     
     Args:
         base_page_url (str): The base page URL to extract the VTT URL.
+        api_url (str): The API URL to send the processed subtitles.
+        session_id (str): The session ID for the current transcription.
     """
-
     if session_id is None:
-        raise NotImplementedError("Session ID is required in date timestamp format")
+        raise ValueError("Session ID is required in date timestamp format")
     
     try:
         VTT_BASE_URL = extract_vtt_url.remote(base_page_url)
@@ -217,7 +212,9 @@ def controller(base_page_url: str, api_url: str, session_id: str | None = None) 
 
     batch_size: int = 100
     current_batch: int = 1
-    dict["stop_count"] = 0
+    all_subtitles: list[SubtitleEntry] = []
+    consecutive_empty_batches: int = 0
+    max_empty_batches: int = 3  # Stop after this many consecutive empty batches
 
     while True:
         batch_indices: list[int] = list(range((current_batch - 1) * batch_size + 1, current_batch * batch_size + 1))
@@ -225,23 +222,34 @@ def controller(base_page_url: str, api_url: str, session_id: str | None = None) 
         url_list = [VTT_BASE_URL for _ in batch_indices]
         print(f"Processing batch {current_batch}: Indices {batch_indices[0]} to {batch_indices[-1]}")
 
-        subtitles = []
+        batch_subtitles: list[SubtitleEntry] = []
         try:
             for subtitle in fetch_subtitles.map(url_list, batch_indices, session_ids):
                 if subtitle is not None:
-                    subtitles.append(subtitle)
-            current_batch += 1
-            if dict["stop_count"] >= batch_size:
-                print("Reached the end of the subtitles.")
-                break
+                    batch_subtitles.append(subtitle)
         except Exception as e:
-            print(f"Finished with batch {current_batch} due to error: {e}")
-            break
+            print(f"Error processing batch {current_batch}: {e}")
 
-    chunks = dedup_and_chunk(subtitles)
+        if not batch_subtitles:
+            consecutive_empty_batches += 1
+            print(f"Empty batch encountered. Consecutive empty batches: {consecutive_empty_batches}")
+            if consecutive_empty_batches >= max_empty_batches:
+                print(f"Reached {max_empty_batches} consecutive empty batches. Ending transcription.")
+                break
+        else:
+            consecutive_empty_batches = 0
+            all_subtitles.extend(batch_subtitles)
+
+        current_batch += 1
+
+    print(f"Total subtitles collected: {len(all_subtitles)}")
+    chunks = dedup_and_chunk(all_subtitles)
+    print(f"Number of chunks after deduplication: {len(chunks)}")
+
     for chunk in chunks:
         send_to_api.remote(chunk, api_url)
 
+    print("Transcription process completed.")
 
 
 @app.local_entrypoint()
@@ -251,5 +259,5 @@ def main() -> None:
     """
     BASE_PAGE_URL = "https://videoplayback.parliamentlive.tv/Player/Index/d439fb88-5c5c-48c5-a0db-c715e09f78d2"
     API_URL = "https://parliament-wow.threepointone.workers.dev/api/transcriptions"
-    SESSION_ID = "2024-09-10"
+    SESSION_ID = "d439fb88-5c5c-48c5-a0db-c715e09f78d2"
     controller.remote(BASE_PAGE_URL, API_URL, SESSION_ID)
