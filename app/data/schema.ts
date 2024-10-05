@@ -10,28 +10,38 @@ export const sessionDB = sqliteTable("session", {
   vidioUrl: text("vidioUrl").notNull(),
   room: text("room").notNull(),
   timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
-  documents: text("documents", { mode: "json" })
+  bills: text("bills", { mode: "json" })
     .$type<
       {
-        title: string;
-        description: string;
-        format: string;
-        url: string;
-        pubDate: string;
+        id: string;
+        name: string;
+        stage: string;
+        documents: {
+          title: string;
+          description: string;
+          format: string;
+          url: string;
+          pubDate: string;
+        }[];
       }[]
     >()
     .notNull(),
 });
 
 export const insertSessionSchema = createInsertSchema(sessionDB, {
-  timestamp: z.string(z.pipeline(z.string(), z.date())),
-  documents: z.array(
+  timestamp: z.string(),
+  bills: z.array(
     z.object({
-      title: z.string(),
-      description: z.string(),
-      format: z.string(),
-      url: z.string(),
-      pubDate: z.string(),
+      id: z.string(),
+      name: z.string(),
+      stage: z.string(),
+      documents: z.object({
+        title: z.string(),
+        description: z.string(),
+        format: z.string(),
+        url: z.string(),
+        pubDate: z.string(),
+      }),
     })
   ),
 });

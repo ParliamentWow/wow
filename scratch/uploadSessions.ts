@@ -2,7 +2,9 @@ import { hc } from "hono/client";
 import { SessionRoute } from "../app/api/sessions";
 import file from "./file.json";
 import { readFile } from "fs/promises";
-const client = hc<SessionRoute>("http://localhost:8787/api");
+const client = hc<SessionRoute>(
+  "https://parliament-wow.threepointone.workers.dev/api"
+);
 
 type Bill = {
   id: string;
@@ -49,16 +51,8 @@ async function uploadSessions() {
           name: `${session.room} - ${session.date}`,
           vidioUrl: session.url,
           room: session.room,
-          timestamp: new Date(session.date),
-          documents: bills.flatMap((bill) =>
-            bill.documents.map((doc) => ({
-              title: doc.title,
-              description: doc.description,
-              format: doc.format,
-              url: doc.url,
-              pubDate: doc.pubDate,
-            }))
-          ),
+          timestamp: session.date,
+          bill: bills,
         },
       });
 

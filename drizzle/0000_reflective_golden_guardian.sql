@@ -3,7 +3,9 @@ CREATE TABLE `session` (
 	`name` text NOT NULL,
 	`description` text,
 	`vidioUrl` text NOT NULL,
-	`timestamp` integer NOT NULL
+	`room` text NOT NULL,
+	`timestamp` integer NOT NULL,
+	`bills` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `transcriptions` (

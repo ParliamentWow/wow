@@ -41,9 +41,10 @@ const sessionRoute = sessions.post(
   zValidator("json", insertSessionSchema),
   async (c) => {
     const data = await c.req.valid("json");
-    console.log(data);
     const db = getD1Client(c.env);
-    await db.insert(sessionDB).values(data);
+    await db
+      .insert(sessionDB)
+      .values({ ...data, timestamp: new Date(data.timestamp) });
 
     return c.json(
       {
