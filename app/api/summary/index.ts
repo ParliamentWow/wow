@@ -13,13 +13,13 @@ summary.post(
   zValidator(
     "json",
     z.object({
-      session: z.string(),
+      sessionId: z.string(),
       billName: z.string(),
     })
   ),
   async (c) => {
     const data = await c.req.valid("json");
-    const sessionId = data.session;
+    const sessionId = data.sessionId;
     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
       text: data.billName,
     });
@@ -45,7 +45,6 @@ summary.post(
       }
     );
 
-    console.log("PUFF DONE");
     if (!pufResponse.ok) {
       const txt = await pufResponse.text();
       console.log(txt);
