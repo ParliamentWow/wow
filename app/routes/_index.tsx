@@ -2,36 +2,20 @@ import { type LoaderFunction, json } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import SessionList from "~/components/SessionList";
-import {
-  getLiveSessions,
-  getPastSessions,
-  getUpcomingSessions,
-} from "~/utils/api.server";
-
-interface Session {
-  id: string;
-  title: string;
-  date: string;
-}
+import { type Session, getSessions } from "~/utils/api.server";
 
 interface LoaderData {
-  liveSessions: Session[];
-  upcomingSessions: Session[];
-  pastSessions: Session[];
+  sessions: Session[];
 }
 
 export const loader: LoaderFunction = async () => {
-  const [liveSessions, upcomingSessions, pastSessions] = await Promise.all([
-    getLiveSessions(), // You'll need to create this function
-    getUpcomingSessions(),
-    getPastSessions(),
-  ]);
-  return json<LoaderData>({ liveSessions, upcomingSessions, pastSessions });
+  const sessions = await getSessions();
+
+  return json<LoaderData>({ sessions });
 };
 
 export default function Index() {
-  const { liveSessions, upcomingSessions, pastSessions } =
-    useLoaderData<LoaderData>();
+  const { sessions } = useLoaderData<LoaderData>();
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
@@ -56,15 +40,17 @@ export default function Index() {
       <div className="space-y-8">
         <section>
           <h2 className="text-2xl font-semibold mb-4">Live Sessions</h2>
-          <SessionList sessions={liveSessions} />
+          <SessionList sessions={sessions.filter((s) => s.isLive)} />
         </section>
         <section>
           <h2 className="text-2xl font-semibold mb-4">Past Sessions</h2>
-          <SessionList sessions={pastSessions} />
+          <SessionList sessions={sessions.filter((s) => s.status === "past")} />
         </section>
         <section>
           <h2 className="text-2xl font-semibold mb-4">Upcoming Sessions</h2>
-          <SessionList sessions={upcomingSessions} />
+          <SessionList
+            sessions={sessions.filter((s) => s.status === "upcoming")}
+          />
         </section>
       </div>
     </div>

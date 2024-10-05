@@ -1,9 +1,13 @@
 import { createRequestHandler, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
 import api from "./api";
+import { Ai } from "@cloudflare/workers-types/experimental";
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type Env = {
   DB: D1Database;
+  AI: Ai;
+  TURBOPUFFER_KEY?: string;
   // Add your bindings here
 };
 

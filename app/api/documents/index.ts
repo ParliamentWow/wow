@@ -1,50 +1,26 @@
-import { eq } from "drizzle-orm";
-import { Hono } from "hono";
-import { transcriptionDB } from "~/data/schema";
-import type { Env } from "~/server";
-import { getD1Client } from "../../data";
 import { zValidator } from "@hono/zod-validator";
-import { insertTranscriptionSchema } from "~/data/schema";
-const transcriptions = new Hono<{ Bindings: Env }>();
+import { Hono } from "hono";
+import { z } from "zod";
 
-transcriptions.get("/transcriptions", async (c) => {
-  const db = getD1Client(c.env);
-  const transcriptions = await db.query.transcriptionDB.findMany();
+import { Env } from "~/server";
 
-  return c.json(
-    {
-      message: "Transcriptions fetched",
-      results: transcriptions,
-    },
-    200
-  );
-});
+const documents = new Hono<{ Bindings: Env }>();
 
-transcriptions.get("/transcriptions/:id", async (c) => {
-  const id = c.req.param("id");
-  const db = getD1Client(c.env);
-
-  const transcription = await db.query.transcriptionDB.findFirst({
-    where: eq(transcriptionDB.id, id),
-  });
-
-  return c.json(
-    {
-      message: "Transcription fetched",
-      result: transcription,
-    },
-    200
-  );
-});
-
-transcriptions.post(
-  "/transcriptions",
-  zValidator("json", insertTranscriptionSchema),
+documents.post(
+  "/documents",
+  zValidator(
+    "json",
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      description: z.string(),
+      url: z.string(),
+      content: z.string(),
+      publishDate: z.string(),
+    })
+  ),
   async (c) => {
     const data = await c.req.valid("json");
-    console.log(data);
-    const db = getD1Client(c.env);
-    await db.insert(transcriptionDB).values(data);
 
     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
       text: data.content,
@@ -54,7 +30,7 @@ transcriptions.post(
       throw new Error("TURBOPUFFER_KEY not found");
     }
     const pufResponse = await fetch(
-      `https://api.turbopuffer.com/v1/vectors/${data.sessionId}`,
+      `https://api.turbopuffer.com/v1/vectors/${data.id}`,
       {
         method: "POST",
         headers: {
@@ -71,7 +47,7 @@ transcriptions.post(
                 metadata: JSON.stringify({
                   ...data,
                   content: undefined,
-                  metadata: "transcriptions",
+                  metadata: "document",
                 }),
               },
             },
@@ -95,14 +71,13 @@ transcriptions.post(
     if (!pufResponse.ok) {
       throw new Error("Failed to insert into puffer");
     }
-
     return c.json(
       {
-        message: "Transcription created",
+        message: "Document created",
       },
       201
     );
   }
 );
 
-export default transcriptions;
+export default documents;
