@@ -27,7 +27,7 @@ summary.post(
     const cached = await c.env.SUMMARY_CACHE.get(cacheKey);
 
     if (cached) {
-      return c.json(cached);
+      return c.json(JSON.parse(cached));
     }
     const sessionId = data.sessionId;
     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
