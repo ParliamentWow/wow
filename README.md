@@ -1,4 +1,4 @@
-# Welcome to Remix + Cloudflare!
+# Welcome to 💿 Remix + ⛅️ Cloudflare!
 
 - 📖 [Remix docs](https://remix.run/docs)
 
