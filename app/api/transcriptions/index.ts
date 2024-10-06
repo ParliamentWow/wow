@@ -37,7 +37,7 @@ transcriptions.get("/transcriptions/live", async (c) => {
   );
 
   const res = streamText(c, async (stream) => {
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 10000));
     for (const chunk of chunks) {
       await stream.writeln(`<div className="p-1>${chunk}</div>`);
       await new Promise((r) => setTimeout(r, 1000));
