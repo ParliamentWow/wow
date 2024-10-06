@@ -1,5 +1,3 @@
-import { SummarySize } from "./types";
-
 export const summaryPrompt = (
   transcription: string,
   billTitle: string,
@@ -31,7 +29,7 @@ Consider how these impacts might affect different groups of people, including bu
 - Industries or sectors
 - Government institutions
 
-${question ? `The user has asked the following question: "${question}"` : ""}
+The summary should be 50 words in length.
 
 Please provide your summary and analysis in the following format:
 

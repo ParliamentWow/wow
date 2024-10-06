@@ -15,9 +15,11 @@
     "check": "biome check --apply ."
   },
   "dependencies": {
+    "@ai-sdk/mistral": "^0.0.42",
     "@hono/zod-validator": "^0.3.0",
     "@remix-run/cloudflare": "^2.12.1",
     "@remix-run/react": "^2.12.1",
+    "ai": "^3.4.9",
     "dotenv-cli": "^7.4.2",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",

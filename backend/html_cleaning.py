@@ -122,6 +122,6 @@ def controller(start_from_id: str | None = None) -> list[Document]:
 
 @app.local_entrypoint()
 def main():
-    start_from_id = str(3720)
+    start_from_id = str(3733)
 
     controller.remote(start_from_id)

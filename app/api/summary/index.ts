@@ -2,7 +2,9 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 
+import { generateText } from "ai";
 import { Env } from "~/server";
+import mistral from "../ai/models";
 import { summaryPrompt } from "../ai/prompts";
 
 const summary = new Hono<{ Bindings: Env }>();
@@ -59,22 +61,22 @@ summary.post(
     }[];
     const prompt = summaryPrompt(
       puffData
-        .map((pd) => `<content>${pd.attributes.page_content}</content>`)
+        .map((pd) => {
+          return `<doc content="${pd.attributes.page_content}", source_url="${pd.attributes.metadata}" />`;
+        })
         .join("\n"),
       data.billName,
       data.question
     );
-    const mistral = await c.env.AI.run(
-      "@cf/mistral/mistral-7b-instruct-v0.2-lora",
-      {
-        prompt,
-      }
-    );
+    const { text } = await generateText({
+      model: mistral(c.env)("mistral-large-latest"),
+      prompt,
+    });
 
     return c.json(
       {
         message: "Summary fetched",
-        result: mistral,
+        result: text,
       },
       201
     );
