@@ -299,7 +299,7 @@ function Summary({
 
       // parse xmlStr to extract content of <debate_summary>, <impact_analysis> and <citations>
       const div = document.createElement("div");
-      div.innerHTML = xmlStr.result.response;
+      div.innerHTML = xmlStr.result;
       const debateSummary = div.querySelector("debate_summary")?.textContent;
       const impactAnalysis = div.querySelector("impact_analysis")?.textContent;
       const citations = div.querySelector("citations")?.textContent;
