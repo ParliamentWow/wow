@@ -21,11 +21,8 @@ export const useChunkedContent = (url: string) => {
 
         while (true) {
           const { done, value } = await reader.read();
-          console.log("done", done);
-          console.log("value", value);
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
-          console.log("chunk", chunk);
           setContent((prevContent) => prevContent + chunk);
         }
       } catch (error) {
