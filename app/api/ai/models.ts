@@ -1,3 +1,4 @@
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createMistral } from "@ai-sdk/mistral";
 import { Env } from "~/server";
 
@@ -10,4 +11,13 @@ const mistral = (env: Env) => {
   });
 };
 
-export default mistral;
+const google = (env: Env) => {
+  if (!env.GOOGLE_AI_API_KEY) {
+    throw new Error("GOOGLE_AI_API_KEY is not set");
+  }
+  return createGoogleGenerativeAI({
+    apiKey: env.GOOGLE_AI_API_KEY,
+  });
+};
+
+export { google, mistral };

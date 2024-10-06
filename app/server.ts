@@ -9,6 +9,7 @@ export type Env = {
   AI: Ai;
   TURBOPUFFER_KEY?: string;
   MISTRAL_AI_API_KEY?: string;
+  GOOGLE_AI_API_KEY?: string;
   SUMMARY_CACHE: KVNamespace;
   // Add your bindings here
 };
