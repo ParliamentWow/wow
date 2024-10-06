@@ -5,7 +5,7 @@ import {
   json,
 } from "@remix-run/cloudflare";
 import { Form, Link, useFetcher, useLoaderData } from "@remix-run/react";
-import { eq } from "drizzle-orm";
+import { eq, is } from "drizzle-orm";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { getD1Client } from "~/data";
@@ -13,6 +13,7 @@ import { sessionDB } from "~/data/schema";
 
 import { Suspense } from "react";
 import { suspend } from "suspend-react";
+import { useChunkedContent } from "./fetch-chunked";
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
@@ -114,13 +115,11 @@ export default function SessionPage() {
           />
         </div>
         <div className="w-1/3">
-          <Suspense fallback={<div>Loading...</div>}>
-            <h2 className="text-xl font-bold mb-2">Transcription</h2>
-            <div className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md">
-              {/* Add your transcription content here */}
-              <Transcription sessionId={"live"} />
-            </div>
-          </Suspense>
+          <h2 className="text-xl font-bold mb-2">Transcription</h2>
+          <div className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md">
+            {/* Add your transcription content here */}
+            <Transcription sessionId={"live"} />
+          </div>
         </div>
       </div>
 
@@ -340,14 +339,11 @@ function Summary({
 }
 
 function Transcription({ sessionId }: { sessionId: string }) {
-  const response = suspend(async () => {
-    if (typeof window === "undefined") {
-      return "Loading ...";
-    }
+  const { content, isLoading } = useChunkedContent("/api/transcriptions/live");
 
-    const response = await fetch(`/api/transcriptions/live`);
-    return response.text();
-  });
+  // if(isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
-  return response;
+  return <div>{content}</div>;
 }
