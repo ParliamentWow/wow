@@ -133,7 +133,6 @@ export default function SessionPage() {
           <Form
             className="flex flex-col space-y-2"
             onSubmit={(e) => {
-              console.log("submit", e);
               e.preventDefault();
               debouncedSetQuestion(e.target.question.value);
             }}
@@ -156,6 +155,7 @@ export default function SessionPage() {
               sessionId={session.id}
               billName={activeBill}
               question={question}
+              key={`${session.id}-${activeBill}-${question}`}
             />
           </Suspense>
         </div>
@@ -282,7 +282,7 @@ export default function SessionPage() {
 }
 
 const sampleRes = {
-  message: "Summary fetched",
+  message: "Summary fetched..",
   result: {
     response:
       " <debate_summary>\nThis parliamentary debate primarilyfocused on the importance of ensuring building safety, particularly in the aftermath of the Grenfell Tower tragedy. Members of parliament discussed recent fires and the slow progress in remedying defects, especially regarding cladding. Some expressed concern about the pace of remediation, the financial burden on leaseholders, and the role of developers in the crisis. Residents' displacement, insurance issues, and mortgage difficulties were also addressed. Some members advocated for stronger regulations, regulatory oversight, and industry responsibility.\n\nNotable quotes included calls for accountability, remedial actions, and the urgent need to address these issues.\n</debate_summary>\n\n<impact_analysis>\nThe speeches given during the debate highlighted the ongoing concerns about the safety of residential buildings, particularly for those in high-rise structures and already vulnerable populations. These impacts have immediate and ongoing effects, particularly on residents who face displacement, financial burdens, and emotional distress due to the lack of safety in their homes. Further, the government will likely face pressure to improve inspections, increase support for cladding removal, and further regulate the construction industry.\n\nLong-term consequences may include increased scrutiny of the housing sector, changes to legislation, and improved collaboration between the government, construction industry, and local communities to prevent such crises in the future.\n</impact_analysis>\n\n<citations>\n- Grenfell Tower Inquiry Report (Phase 1)\n- Housing, Communities and Local Government Statements\n- Written ministerial statements on building safety regulations\n</citations>",
@@ -298,66 +298,26 @@ function Summary({
   billName?: string;
   question?: string;
 }) {
-  const response = suspend(async () => {
-    if (typeof window === "undefined") {
-      return;
-    }
+  // const [response, setResponse] = useState<string>('');
 
-    try {
-      console.log("fetching summary", sessionId, billName, question);
-      const res = await fetch("/api/summary", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sessionId,
-          billName: billName || "asdasd",
-          question: question || "asdasd",
-        }),
-      });
-      const xmlStr = await res.json<{ result: { response: string } }>();
-      // const xmlStr = sampleRes.result.response;
-      console.log("xmlStr", xmlStr);
-
-      // parse xmlStr to extract content of <debate_summary>, <impact_analysis> and <citations>
-      const div = document.createElement("div");
-      div.innerHTML = xmlStr.result;
-      const debateSummary = div.querySelector("debate_summary")?.textContent;
-      const impactAnalysis = div.querySelector("impact_analysis")?.textContent;
-      const citations = div.querySelector("citations")?.textContent;
-
-      // console.log("debateSummary", debateSummary);
-      // console.log("impactAnalysis", impactAnalysis);
-      // console.log("citations", citations);
-
-      return {
-        debateSummary,
-        impactAnalysis,
-        citations,
-      };
-    } catch (e) {
-      console.error("error", e);
-      return null;
-    }
-  }, [sessionId, billName, question]);
-  console.log("response", response);
+  const { content, isLoading } = useChunkedContent(
+    "/api/summary",
+    "POST",
+    JSON.stringify({
+      sessionId,
+      billName: billName || "asdasd",
+      question: question || "asdasd",
+    })
+  );
 
   return (
     <div className="mt-4 p-4 bg-gray-100 rounded-md">
-      <div className="prose">
-        <div>
-          <h2 className="font-bold">Debate Summary</h2>
-          <p>{response?.debateSummary}</p>
-        </div>
-        <div>
-          <h2 className="font-bold">Impact Analysis</h2>
-          <p>{response?.impactAnalysis}</p>
-        </div>
-        <div>
-          <h2 className="font-bold">Citations</h2>
-          <ReactMarkdown>{response?.citations}</ReactMarkdown>
-        </div>
+      <div className="prose summary">
+        {!content ? (
+          <div>Loading...</div>
+        ) : (
+          <ReactMarkdown>{content}</ReactMarkdown>
+        )}
       </div>
     </div>
   );
