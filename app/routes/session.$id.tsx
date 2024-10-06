@@ -56,9 +56,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function SessionPage() {
   const { session } = useLoaderData<typeof loader>();
   assert(session, "Session not found");
-  const [activeBill, setActiveBill] = useState<string | null>(null);
+  const [activeBill, setActiveBill] = useState<string>();
 
-  const [question, setQuestion] = useState<string | null>(null);
+  const [question, setQuestion] = useState<string>();
 
   const debouncedSetQuestion = debounce(setQuestion, 1000);
 
@@ -305,8 +305,8 @@ function Summary({
     "POST",
     JSON.stringify({
       sessionId,
-      billName: billName || "asdasd",
-      question: question || "asdasd",
+      billName: billName,
+      question: question,
     })
   );
 
