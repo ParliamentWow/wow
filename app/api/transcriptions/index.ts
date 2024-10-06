@@ -30,8 +30,6 @@ transcriptions.get("/transcriptions/live", async (c) => {
     where: eq(transcriptionDB.sessionId, sessionId),
   });
 
-  console.log(transcriptions);
-
   const chunks = transcriptions.flatMap((t) =>
     t.content.replace(/\\u[\dA-F]{4}/gi, "").split(".")
   );
@@ -59,12 +57,16 @@ transcriptions.get("/transcriptions/:id", async (c) => {
     t.content.replace(/\\u[\dA-F]{4}/gi, "").split(".")
   );
 
-  return streamText(c, async (stream) => {
+  const res = streamText(c, async (stream) => {
     for (const chunk of chunks) {
       await stream.writeln(chunk);
       await new Promise((r) => setTimeout(r, 2500));
     }
   });
+
+  res.headers.set("content-encoding", "identity");
+
+  return res;
 });
 
 transcriptions.post(
