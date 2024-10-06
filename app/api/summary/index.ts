@@ -6,6 +6,7 @@ import { generateText } from "ai";
 import { Env } from "~/server";
 import mistral from "../ai/models";
 import { summaryPrompt } from "../ai/prompts";
+import { getBills, getTranscriptionBySessionId } from "../ai/turbopuffer";
 
 const summary = new Hono<{ Bindings: Env }>();
 
@@ -15,7 +16,7 @@ summary.post(
     "json",
     z.object({
       sessionId: z.string(),
-      billName: z.string(),
+      billName: z.string().optional(),
       question: z.string().optional(),
     })
   ),
@@ -23,51 +24,48 @@ summary.post(
     const data = await c.req.valid("json");
     const sessionId = data.sessionId;
     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
-      text: data.billName,
+      text:
+        data.billName ?? "key moments in the debate and important decisions",
     });
 
     if (!c.env.TURBOPUFFER_KEY) {
       throw new Error("TURBOPUFFER_KEY not found");
     }
 
-    const pufResponse = await fetch(
-      `https://api.turbopuffer.com/v1/vectors/${sessionId}/query`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${c.env.TURBOPUFFER_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          vector: response.data[0],
-          //   rank_by: ["page_content", "BM25", data.question],
-          top_k: 10,
-          include_attributes: true,
-        }),
-      }
-    );
+    let context = "";
 
-    if (!pufResponse.ok) {
-      const txt = await pufResponse.text();
-      console.log(txt);
-      throw new Error("PUFF request failed");
+    if (!data.billName) {
+      const transcriptions = await getTranscriptionBySessionId(
+        c.env,
+        sessionId,
+        response.data[0]
+      );
+      context = transcriptions
+        .map(
+          (pd) =>
+            `<transcriptions content="${pd.attributes.page_content}", metadata="${pd.attributes.metadata}" />`
+        )
+        .join("\n");
+    } else {
+      const [transcriptions, bills] = await Promise.all([
+        getTranscriptionBySessionId(c.env, sessionId, response.data[0]),
+        getBills(c.env, response.data[0]),
+      ]);
+
+      context =
+        transcriptions
+          .map((pd) => {
+            return `<transcriptions content="${pd.attributes.page_content}", metadata="${pd.attributes.metadata}" />`;
+          })
+          .join("\n") +
+        bills
+          .map((pd) => {
+            return `<bills content="${pd.attributes.page_content}", metadata="${pd.attributes.metadata}" />`;
+          })
+          .join("\n");
     }
 
-    const puffData = (await pufResponse.json()) as {
-      attributes: {
-        page_content: string;
-        metadata: string;
-      };
-    }[];
-    const prompt = summaryPrompt(
-      puffData
-        .map((pd) => {
-          return `<doc content="${pd.attributes.page_content}", source_url="${pd.attributes.metadata}" />`;
-        })
-        .join("\n"),
-      data.billName,
-      data.question
-    );
+    const prompt = summaryPrompt(context, data.billName, data.question);
     const { text } = await generateText({
       model: mistral(c.env)("mistral-large-latest"),
       prompt,
