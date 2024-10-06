@@ -20,6 +20,16 @@ function assert(condition: unknown, message: string): asserts condition {
   }
 }
 
+function debounce(fn: () => void, wait: number) {
+  let timeout: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      return fn(...args);
+    }, wait);
+  };
+}
+
 export const loader = async ({ params, context }: LoaderFunctionArgs) => {
   const db = getD1Client(context.env);
   const session = await db.query.sessionDB.findFirst({
@@ -48,6 +58,8 @@ export default function SessionPage() {
   const [activeBill, setActiveBill] = useState<string | null>(null);
 
   const [question, setQuestion] = useState<string | null>(null);
+
+  const debouncedSetQuestion = debounce(setQuestion, 1000);
 
   const [summaries, setSummaries] = useState<
     Record<string, Record<"short" | "medium" | "long", string>>
@@ -113,12 +125,14 @@ export default function SessionPage() {
           <Form
             className="flex flex-col space-y-2"
             onSubmit={(e) => {
+              console.log("submit", e);
               e.preventDefault();
-              setQuestion(e.target.value);
+              debouncedSetQuestion(e.target.question.value);
             }}
           >
             <input
               type="text"
+              name="question"
               placeholder="Ask a question"
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -282,6 +296,7 @@ function Summary({
     }
 
     try {
+      console.log("fetching summary", sessionId, billName, question);
       const res = await fetch("/api/summary", {
         method: "POST",
         headers: {
