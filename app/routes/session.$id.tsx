@@ -89,7 +89,14 @@ export default function SessionPage() {
 
       {/* Video and Transcription section */}
       <div className="flex space-x-4 mb-4">
-        <div className="w-2/3">
+        <div
+          className={`${session.id === "b015fab5-6ca3-45a1-8b37-ec209d439626" ? "w-2/3" : "w-full"} relative`}
+        >
+          {session.id === "b015fab5-6ca3-45a1-8b37-ec209d439626" && (
+            <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-md text-sm font-bold z-10">
+              LIVE
+            </div>
+          )}
           <iframe
             title="Parliament Wow"
             id="UKPPlayer"
@@ -106,13 +113,15 @@ export default function SessionPage() {
             allowFullScreen
           />
         </div>
-        <div className="w-1/3">
-          <h2 className="text-xl font-bold mb-2">Transcription</h2>
-          <div className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md">
-            {/* Add your transcription content here */}
-            <p>Transcription content goes here...</p>
+        {session.id === "b015fab5-6ca3-45a1-8b37-ec209d439626" && (
+          <div className="w-1/3">
+            <h2 className="text-xl font-bold mb-2">Transcription</h2>
+            <div className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md">
+              {/* Add your transcription content here */}
+              <p>Transcription content goes here...</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Updated layout: QnA section on the left (2/3), bills on the right (1/3) */}
