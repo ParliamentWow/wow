@@ -1,19 +1,17 @@
 import {
   type ActionFunction,
-  type LoaderFunction,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
   json,
 } from "@remix-run/cloudflare";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Form, Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { getD1Client } from "~/data";
 import { sessionDB } from "~/data/schema";
 
-// import VideoPlayer from "~/components/VideoPlayer";
-
-function assert(condition: unknown, message: string) {
+function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(message);
   }
@@ -32,17 +30,18 @@ export const loader = async ({ params, context }: LoaderFunctionArgs) => {
   });
 };
 
-// export const action: ActionFunction = async ({
-//   request,
-// }: LoaderFunctionArgs) => {
-//   const formData = await request.formData();
-//   const question = formData.get("question");
-//   console.log("TODO: ask question", question);
-//   return json({});
-// };
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const question = formData.get("question");
+  console.log("TODO: ask question", question);
+  return json({
+    answer: "TODO: answer",
+  });
+};
 
 export default function SessionPage() {
   const { session } = useLoaderData<typeof loader>();
+  assert(session, "Session not found");
   const [activeBill, setActiveBill] = useState<string | null>(null);
 
   const [summaries, setSummaries] = useState<
@@ -52,6 +51,17 @@ export default function SessionPage() {
   const [activeSummary, setActiveSummary] = useState<
     "short" | "medium" | "long"
   >("short");
+
+  const answerFetcher = useFetcher<typeof action>();
+
+  function handleAskQuestion(billId: string, question: string) {
+    answerFetcher.submit(
+      { billId, question },
+      {
+        method: "post",
+      }
+    );
+  }
 
   const handleZoom = (
     billId: string,
@@ -69,16 +79,21 @@ export default function SessionPage() {
       >
         &larr; Back to Homepage
       </Link>
-      <h1 className="text-2xl font-bold mb-4">{session?.name}</h1>
+      <h1 className="text-2xl font-bold mb-4">{session.name}</h1>
 
       <iframe
         title="Parliament Wow"
-        src={`${session?.videoUrl?.replace(
+        id="UKPPlayer"
+        name="UKPPlayer"
+        seamless={true}
+        frameBorder={0}
+        allow="encrypted-media; autoplay; fullscreen"
+        src={`${session.videoUrl.replace(
           "https://parliamentlive.tv/event/index/",
           "https://videoplayback.parliamentlive.tv/Player/Index/"
         )}?audioOnly=False&autoStart=True&script=True`}
         width="100%"
-        height="500px"
+        height="540px"
         allowFullScreen
       />
 
@@ -86,7 +101,7 @@ export default function SessionPage() {
       <div className="mt-4">
         <h2 className="text-xl font-bold mb-2">Bills</h2>
         <ul className="list-disc">
-          {session?.bills.map((bill) => (
+          {session.bills.map((bill) => (
             // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
             <li
               key={bill.id}
@@ -95,6 +110,7 @@ export default function SessionPage() {
               }}
               onClick={() => {
                 if (activeBill !== bill.id) {
+                  answerFetcher.data = null;
                   setActiveBill(bill.id);
                   setActiveSummary("short");
                 }
@@ -161,6 +177,35 @@ export default function SessionPage() {
                   <ReactMarkdown>
                     {`Showing ${activeSummary} summary for ${bill.name}:`}
                   </ReactMarkdown>
+                  <div>
+                    {/* an input to ask a question, and section with the answer */}
+                    <div className="mt-4">
+                      <Form
+                        className="flex space-x-2"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleAskQuestion(bill.id, "Ask a question");
+                        }}
+                      >
+                        <input
+                          type="text"
+                          placeholder="Ask a question"
+                          className="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                          type="submit"
+                          className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          Ask
+                        </button>
+                      </Form>
+                      <div className="mt-4 p-4 bg-gray-100 rounded-md">
+                        <ReactMarkdown className="prose">
+                          {answerFetcher.data?.answer}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </li>

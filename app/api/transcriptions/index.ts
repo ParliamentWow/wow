@@ -5,6 +5,7 @@ import type { Env } from "~/server";
 import { getD1Client } from "../../data";
 import { zValidator } from "@hono/zod-validator";
 import { insertTranscriptionSchema } from "~/data/schema";
+import { insertTranscription } from "../ai/turbopuffer";
 const transcriptions = new Hono<{ Bindings: Env }>();
 
 transcriptions.get("/transcriptions", async (c) => {
@@ -18,6 +19,33 @@ transcriptions.get("/transcriptions", async (c) => {
     },
     200
   );
+});
+
+transcriptions.get("/transcriptions/fix", async (c) => {
+  const db = getD1Client(c.env);
+  const transcriptions = await db.query.transcriptionDB.findMany();
+
+  try {
+    for (const transcription of transcriptions) {
+      try {
+        console.log("fixing transcription", transcription.id);
+
+        const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
+          text: transcription.content,
+        });
+
+        console.log("generated vectors for", transcription.id);
+
+        await insertTranscription(c.env, response.data[0], transcription);
+      } catch (e) {
+        console.log(transcription.id, "failed");
+      }
+    }
+  } catch (e) {
+    return c.text((e as Error).stack);
+  }
+
+  return c.json(transcriptions);
 });
 
 transcriptions.get("/transcriptions/:id", async (c) => {
@@ -49,52 +77,7 @@ transcriptions.post(
     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
       text: data.content,
     });
-
-    if (!c.env.TURBOPUFFER_KEY) {
-      throw new Error("TURBOPUFFER_KEY not found");
-    }
-    const pufResponse = await fetch(
-      `https://api.turbopuffer.com/v1/vectors/${data.sessionId}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${c.env.TURBOPUFFER_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          upserts: [
-            {
-              id: data.id,
-              vector: response.data[0],
-              attributes: {
-                page_content: data.content,
-                metadata: JSON.stringify({
-                  ...data,
-                  content: undefined,
-                  metadata: "transcriptions",
-                }),
-              },
-            },
-          ],
-          distance_metric: "cosine_distance",
-          schema: {
-            page_content: {
-              type: "string",
-              bm25: {
-                language: "english",
-                stemming: false,
-                remove_stopwords: true,
-                case_sensitive: false,
-              },
-            },
-          },
-        }),
-      }
-    );
-
-    if (!pufResponse.ok) {
-      throw new Error("Failed to insert into puffer");
-    }
+    await insertTranscription(c.env, response.data[0], data);
 
     return c.json(
       {
