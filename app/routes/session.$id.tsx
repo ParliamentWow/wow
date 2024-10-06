@@ -114,12 +114,12 @@ export default function SessionPage() {
           />
         </div>
         <div className="w-1/3">
-        <Suspense fallback={<div>Loading...</div>}>
-          <h2 className="text-xl font-bold mb-2">Transcription</h2>
-          <div className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md">
-            {/* Add your transcription content here */}
-            <Transcription sessionId={"live"} />
-          </div>
+          <Suspense fallback={<div>Loading...</div>}>
+            <h2 className="text-xl font-bold mb-2">Transcription</h2>
+            <div className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md">
+              {/* Add your transcription content here */}
+              <Transcription sessionId={"live"} />
+            </div>
           </Suspense>
         </div>
       </div>
@@ -317,26 +317,12 @@ function Summary({
           question: question || "asdasd",
         }),
       });
-      const xmlStr = await res.json<{ result: { response: string } }>();
+      const xmlStr = await res.json<{ result: string }>();
       // const xmlStr = sampleRes.result.response;
       console.log("xmlStr", xmlStr);
 
       // parse xmlStr to extract content of <debate_summary>, <impact_analysis> and <citations>
-      const div = document.createElement("div");
-      div.innerHTML = xmlStr.result;
-      const debateSummary = div.querySelector("debate_summary")?.textContent;
-      const impactAnalysis = div.querySelector("impact_analysis")?.textContent;
-      const citations = div.querySelector("citations")?.textContent;
-
-      // console.log("debateSummary", debateSummary);
-      // console.log("impactAnalysis", impactAnalysis);
-      // console.log("citations", citations);
-
-      return {
-        debateSummary,
-        impactAnalysis,
-        citations,
-      };
+      return xmlStr.result;
     } catch (e) {
       console.error("error", e);
       return null;
@@ -346,36 +332,22 @@ function Summary({
 
   return (
     <div className="mt-4 p-4 bg-gray-100 rounded-md">
-      <div className="prose">
-        <div>
-          <h2 className="font-bold">Debate Summary</h2>
-          <p>{response?.debateSummary}</p>
-        </div>
-        <div>
-          <h2 className="font-bold">Impact Analysis</h2>
-          <p>{response?.impactAnalysis}</p>
-        </div>
-        <div>
-          <h2 className="font-bold">Citations</h2>
-          <ReactMarkdown>{response?.citations}</ReactMarkdown>
-        </div>
+      <div className="prose summary">
+        <ReactMarkdown>{response}</ReactMarkdown>
       </div>
     </div>
   );
 }
 
-
-function Transcription({ sessionId }: { sessionId: string}) {
+function Transcription({ sessionId }: { sessionId: string }) {
   const response = suspend(async () => {
     if (typeof window === "undefined") {
       return "Loading ...";
     }
 
-    const response = await fetch(`/api/transcriptions/live`)
+    const response = await fetch(`/api/transcriptions/live`);
     return response.text();
   });
 
-
-
-  return (response);
+  return response;
 }
