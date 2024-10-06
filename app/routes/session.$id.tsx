@@ -20,6 +20,16 @@ function assert(condition: unknown, message: string): asserts condition {
   }
 }
 
+function debounce(fn: () => void, wait: number) {
+  let timeout: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      return fn(...args);
+    }, wait);
+  };
+}
+
 export const loader = async ({ params, context }: LoaderFunctionArgs) => {
   const db = getD1Client(context.env);
   const session = await db.query.sessionDB.findFirst({
@@ -49,6 +59,8 @@ export default function SessionPage() {
 
   const [question, setQuestion] = useState<string | null>(null);
 
+  const debouncedSetQuestion = debounce(setQuestion, 1000);
+
   const [summaries, setSummaries] = useState<
     Record<string, Record<"short" | "medium" | "long", string>>
   >({});
@@ -77,7 +89,14 @@ export default function SessionPage() {
 
       {/* Video and Transcription section */}
       <div className="flex space-x-4 mb-4">
-        <div className="w-2/3">
+        <div
+          className={`${session.id === "b015fab5-6ca3-45a1-8b37-ec209d439626" ? "w-2/3" : "w-full"} relative`}
+        >
+          {session.id === "b015fab5-6ca3-45a1-8b37-ec209d439626" && (
+            <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-md text-sm font-bold z-10">
+              LIVE
+            </div>
+          )}
           <iframe
             title="Parliament Wow"
             id="UKPPlayer"
@@ -115,12 +134,14 @@ export default function SessionPage() {
           <Form
             className="flex flex-col space-y-2"
             onSubmit={(e) => {
+              console.log("submit", e);
               e.preventDefault();
-              setQuestion(e.target.value);
+              debouncedSetQuestion(e.target.question.value);
             }}
           >
             <input
               type="text"
+              name="question"
               placeholder="Ask a question"
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -284,6 +305,7 @@ function Summary({
     }
 
     try {
+      console.log("fetching summary", sessionId, billName, question);
       const res = await fetch("/api/summary", {
         method: "POST",
         headers: {
@@ -301,7 +323,7 @@ function Summary({
 
       // parse xmlStr to extract content of <debate_summary>, <impact_analysis> and <citations>
       const div = document.createElement("div");
-      div.innerHTML = xmlStr.result.response;
+      div.innerHTML = xmlStr.result;
       const debateSummary = div.querySelector("debate_summary")?.textContent;
       const impactAnalysis = div.querySelector("impact_analysis")?.textContent;
       const citations = div.querySelector("citations")?.textContent;
