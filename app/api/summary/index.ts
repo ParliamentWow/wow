@@ -4,7 +4,6 @@ import { z } from "zod";
 
 import { Env } from "~/server";
 import { summaryPrompt } from "../ai/prompts";
-import { SummarySize } from "../ai/types";
 
 const summary = new Hono<{ Bindings: Env }>();
 
@@ -15,7 +14,7 @@ summary.post(
     z.object({
       sessionId: z.string(),
       billName: z.string(),
-      question: z.string(),
+      question: z.string().optional(),
     })
   ),
   async (c) => {
