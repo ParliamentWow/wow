@@ -186,6 +186,7 @@ ${bill}
 ${billExtracts}
 ${transcripts}
     `;
+
     const mistral = await c.env.AI.run("@hf/mistral/mistral-7b-instruct-v0.2", {
       prompt,
     });
