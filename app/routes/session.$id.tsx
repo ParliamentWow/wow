@@ -133,7 +133,6 @@ export default function SessionPage() {
           <Form
             className="flex flex-col space-y-2"
             onSubmit={(e) => {
-              console.log("submit", e);
               e.preventDefault();
               debouncedSetQuestion(e.target.question.value);
             }}
@@ -156,6 +155,7 @@ export default function SessionPage() {
               sessionId={session.id}
               billName={activeBill}
               question={question}
+              key={`${session.id}-${activeBill}-${question}`}
             />
           </Suspense>
         </div>
@@ -298,41 +298,22 @@ function Summary({
   billName?: string;
   question?: string;
 }) {
-  const response = suspend(async () => {
-    if (typeof window === "undefined") {
-      return;
-    }
+  // const [response, setResponse] = useState<string>('');
 
-    try {
-      console.log("fetching summary", sessionId, billName, question);
-      const res = await fetch("/api/summary", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sessionId,
-          billName: billName || "asdasd",
-          question: question || "asdasd",
-        }),
-      });
-      const xmlStr = await res.json<{ result: string }>();
-      // const xmlStr = sampleRes.result.response;
-      console.log("xmlStr", xmlStr);
-
-      // parse xmlStr to extract content of <debate_summary>, <impact_analysis> and <citations>
-      return xmlStr.result;
-    } catch (e) {
-      console.error("error", e);
-      return null;
-    }
-  }, [sessionId, billName, question]);
-  console.log("response", response);
+  const { content, isLoading } = useChunkedContent(
+    "/api/summary",
+    "POST",
+    JSON.stringify({
+      sessionId,
+      billName: billName || "asdasd",
+      question: question || "asdasd",
+    })
+  );
 
   return (
     <div className="mt-4 p-4 bg-gray-100 rounded-md">
       <div className="prose summary">
-        <ReactMarkdown>{response}</ReactMarkdown>
+        <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     </div>
   );
