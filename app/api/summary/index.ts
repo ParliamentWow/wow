@@ -72,7 +72,7 @@ summary.post(
       prompt,
     });
 
-    return stream(c, async (stream) => {
+    const res = stream(c, async (stream) => {
       let fullText = "";
       for await (const chunk of textStream) {
         fullText += chunk;
@@ -80,6 +80,10 @@ summary.post(
       }
       await stream.close();
     });
+
+    res.headers.set("content-encoding", "identity");
+
+    return res;
   }
 );
 
