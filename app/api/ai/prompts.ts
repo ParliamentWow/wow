@@ -59,9 +59,15 @@ Please provide your summary and analysis in the following format:
 [Insert your analysis of the potential impacts here, adhering to the specified word count]
 </impact_analysis>
 
+${
+  billTitle
+    ? `
 <citations>
 [Insert your citations of the full bill here. Format them in bullet points markdown format]
 </citations>
+`
+    : ""
+}
 
 Ensure that your summary and analysis are concise, objective, and within the specified word count. Focus on the most crucial information and impactful elements of the debate and the bill on people's lives.`;
 
