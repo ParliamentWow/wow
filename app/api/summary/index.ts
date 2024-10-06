@@ -1,8 +1,9 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { stream } from "hono/streaming";
 import { z } from "zod";
 
-import { generateText } from "ai";
+import { streamText } from "ai";
 import { Env } from "~/server";
 import mistral from "../ai/models";
 import { summaryPrompt } from "../ai/prompts";
@@ -22,13 +23,6 @@ summary.post(
   ),
   async (c) => {
     const data = await c.req.valid("json");
-
-    const cacheKey = `${data.sessionId}-${data.billName}-${data.question}`;
-    const cached = await c.env.SUMMARY_CACHE.get(cacheKey);
-
-    if (cached) {
-      return c.json(JSON.parse(cached));
-    }
     const sessionId = data.sessionId;
     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
       text:
@@ -73,25 +67,19 @@ summary.post(
     }
 
     const prompt = summaryPrompt(context, data.billName, data.question);
-    const { text } = await generateText({
+    const { textStream } = await streamText({
       model: mistral(c.env)("mistral-large-latest"),
       prompt,
     });
 
-    await c.env.SUMMARY_CACHE.put(
-      cacheKey,
-      JSON.stringify({
-        message: "Summary fetched",
-        result: text,
-      })
-    );
-    return c.json(
-      {
-        message: "Summary fetched",
-        result: text,
-      },
-      201
-    );
+    return stream(c, async (stream) => {
+      let fullText = "";
+      for await (const chunk of textStream) {
+        fullText += chunk;
+        await stream.write(chunk);
+      }
+      await stream.close();
+    });
   }
 );
 
