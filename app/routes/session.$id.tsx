@@ -327,7 +327,7 @@ function Summary({
 }
 
 function Transcription({ sessionId }: { sessionId: string }) {
-  const { content, isLoading } = useChunkedContent("/api/transcriptions/live");
+  const { content, isLoading } = useChunkedContent(`/api/transcriptions/${sessionId}`);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
