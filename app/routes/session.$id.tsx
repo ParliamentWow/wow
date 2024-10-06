@@ -121,7 +121,7 @@ export default function SessionPage() {
             style={{ overflowAnchor: "auto" }}
           >
             {/* Add your transcription content here */}
-            <Transcription sessionId={"live"} />
+            <Transcription sessionId={session.id} />
           </div>
         </div>
       </div>
