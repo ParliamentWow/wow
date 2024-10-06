@@ -2,7 +2,7 @@ export const summaryPrompt = (
   transcription: string,
   billTitle?: string,
   question?: string
-) => `You are tasked with summarizing a parliamentary debate and analyzing its potential impacts. You will be provided with transcription data from the debate, the title of the bill being discussed, and a specified summary size.
+) => `You are tasked with summarizing a parliamentary debate and analyzing its potential impacts. You will be provided with transcription data from the debate and other supporting information.
 
 ${
   question
@@ -49,22 +49,19 @@ Consider how these impacts might affect different groups of people, including bu
 
 The summary should be 50 words in length.
 
-Please provide your summary and analysis in the following format:
+Please provide your summary and analysis in the following markdown format NOT XML TAGS:
 
-<debate_summary>
+## Debate Summary
 [Insert your summary of the debate here, adhering to the specified word count]
-</debate_summary>
 
-<impact_analysis>
+
+## Impact Analysis
 [Insert your analysis of the potential impacts here, adhering to the specified word count]
-</impact_analysis>
 
 ${
   billTitle
-    ? `
-<citations>
+    ? `## Citations
 [Insert your citations of the full bill here. Format them in bullet points markdown format]
-</citations>
 `
     : ""
 }
