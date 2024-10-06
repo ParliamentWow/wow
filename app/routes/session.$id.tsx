@@ -313,7 +313,11 @@ function Summary({
   return (
     <div className="mt-4 p-4 bg-gray-100 rounded-md">
       <div className="prose summary">
-        <ReactMarkdown>{content}</ReactMarkdown>
+        {!content ? (
+          <div>Loading...</div>
+        ) : (
+          <ReactMarkdown>{content}</ReactMarkdown>
+        )}
       </div>
     </div>
   );
