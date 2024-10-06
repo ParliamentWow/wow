@@ -9,6 +9,10 @@ assets = { directory = "./public" }
 [observability]
 enabled = true
 
+[[kv_namespaces]]
+binding = "SUMMARY_CACHE"
+id = "49cc650aec244c6294881c898849d9d1"
+
 [[d1_databases]]
 binding = "DB" # i.e. available in your Worker on env.DB
 database_name = "parliament-wow"

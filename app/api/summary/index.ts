@@ -22,6 +22,13 @@ summary.post(
   ),
   async (c) => {
     const data = await c.req.valid("json");
+
+    const cacheKey = `${data.sessionId}-${data.billName}-${data.question}`;
+    const cached = await c.env.SUMMARY_CACHE.get(cacheKey);
+
+    if (cached) {
+      return c.json(cached);
+    }
     const sessionId = data.sessionId;
     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
       text:
@@ -71,6 +78,13 @@ summary.post(
       prompt,
     });
 
+    await c.env.SUMMARY_CACHE.put(
+      cacheKey,
+      JSON.stringify({
+        message: "Summary fetched",
+        result: text,
+      })
+    );
     return c.json(
       {
         message: "Summary fetched",
