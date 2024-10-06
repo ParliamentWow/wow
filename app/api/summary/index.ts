@@ -6,6 +6,7 @@ import { generateText } from "ai";
 import { Env } from "~/server";
 import mistral from "../ai/models";
 import { summaryPrompt } from "../ai/prompts";
+import { getBills, getTranscriptionBySessionId } from "../ai/turbopuffer";
 
 const summary = new Hono<{ Bindings: Env }>();
 
@@ -30,44 +31,24 @@ summary.post(
       throw new Error("TURBOPUFFER_KEY not found");
     }
 
-    const pufResponse = await fetch(
-      `https://api.turbopuffer.com/v1/vectors/${sessionId}/query`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${c.env.TURBOPUFFER_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          vector: response.data[0],
-          //   rank_by: ["page_content", "BM25", data.question],
-          top_k: 10,
-          include_attributes: true,
-        }),
-      }
-    );
+    const [transcriptions, bills] = await Promise.all([
+      getTranscriptionBySessionId(c.env, sessionId, response.data[0]),
+      getBills(c.env, response.data[0]),
+    ]);
 
-    if (!pufResponse.ok) {
-      const txt = await pufResponse.text();
-      console.log(txt);
-      throw new Error("PUFF request failed");
-    }
-
-    const puffData = (await pufResponse.json()) as {
-      attributes: {
-        page_content: string;
-        metadata: string;
-      };
-    }[];
-    const prompt = summaryPrompt(
-      puffData
+    const context =
+      transcriptions
         .map((pd) => {
-          return `<doc content="${pd.attributes.page_content}", source_url="${pd.attributes.metadata}" />`;
+          return `<transcriptions content="${pd.attributes.page_content}", source_url="${pd.attributes.metadata}" />`;
         })
-        .join("\n"),
-      data.billName,
-      data.question
-    );
+        .join("\n") +
+      bills
+        .map((pd) => {
+          return `<bills content="${pd.attributes.page_content}", source_url="${pd.attributes.metadata}" />`;
+        })
+        .join("\n");
+
+    const prompt = summaryPrompt(context, data.billName, data.question);
     const { text } = await generateText({
       model: mistral(c.env)("mistral-large-latest"),
       prompt,
