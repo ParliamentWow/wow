@@ -30,6 +30,8 @@ transcriptions.get("/transcriptions/live", async (c) => {
     where: eq(transcriptionDB.sessionId, sessionId),
   });
 
+  console.log(transcriptions);
+
   const chunks = transcriptions.flatMap((t) =>
     t.content.replace(/\\u[\dA-F]{4}/gi, "").split(".")
   );

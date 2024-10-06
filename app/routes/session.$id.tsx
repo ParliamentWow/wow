@@ -95,11 +95,13 @@ export default function SessionPage() {
           />
         </div>
         <div className="w-1/3">
+        <Suspense fallback={<div>Loading...</div>}>
           <h2 className="text-xl font-bold mb-2">Transcription</h2>
           <div className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md">
             {/* Add your transcription content here */}
-            <p>Transcription content goes here...</p>
+            <Transcription sessionId={"live"} />
           </div>
+          </Suspense>
         </div>
       </div>
 
@@ -338,4 +340,20 @@ function Summary({
       </div>
     </div>
   );
+}
+
+
+function Transcription({ sessionId }: { sessionId: string}) {
+  const response = suspend(async () => {
+    if (typeof window === "undefined") {
+      return "Loading ...";
+    }
+
+    const response = await fetch(`/api/transcriptions/${sessionId}`)
+    return response.text();
+  });
+
+
+
+  return (response);
 }
