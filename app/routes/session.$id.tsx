@@ -116,7 +116,10 @@ export default function SessionPage() {
         </div>
         <div className="w-1/3">
           <h2 className="text-xl font-bold mb-2">Transcription</h2>
-          <div className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md" style={{ overflowAnchor: "auto"}}>
+          <div
+            className="h-[540px] overflow-y-auto bg-gray-100 p-4 rounded-md"
+            style={{ overflowAnchor: "auto" }}
+          >
             {/* Add your transcription content here */}
             <Transcription sessionId={"live"} />
           </div>
@@ -323,9 +326,8 @@ function Summary({
   );
 }
 
-
-function Transcription({ sessionId }: { sessionId: string}) {
-  const { content, isLoading } = useChunkedContent('/api/transcriptions/live');
+function Transcription({ sessionId }: { sessionId: string }) {
+  const { content, isLoading } = useChunkedContent("/api/transcriptions/live");
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -338,5 +340,11 @@ function Transcription({ sessionId }: { sessionId: string}) {
   //   return <div>Loading...</div>;
   // }
 
-  return <div ref={contentRef} className="flex flex-1 overflow-y flex-col" dangerouslySetInnerHTML={{ __html: content}}></div>;
+  return (
+    <div
+      ref={contentRef}
+      className="flex flex-1 overflow-y flex-col"
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
 }
