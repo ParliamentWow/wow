@@ -8,6 +8,7 @@ export type Env = {
   DB: D1Database;
   AI: Ai;
   TURBOPUFFER_KEY?: string;
+  MISTRAL_AI_API_KEY?: string;
   // Add your bindings here
 };
 
