@@ -6,6 +6,7 @@ import { getD1Client } from "../../data";
 import { zValidator } from "@hono/zod-validator";
 import { insertTranscriptionSchema } from "~/data/schema";
 import { insertTranscription } from "../ai/turbopuffer";
+import { stream, streamText } from "hono/streaming";
 const transcriptions = new Hono<{ Bindings: Env }>();
 
 transcriptions.get("/transcriptions", async (c) => {
@@ -21,31 +22,24 @@ transcriptions.get("/transcriptions", async (c) => {
   );
 });
 
-transcriptions.get("/transcriptions/fix", async (c) => {
+transcriptions.get("/transcriptions/live", async (c) => {
   const db = getD1Client(c.env);
-  const transcriptions = await db.query.transcriptionDB.findMany();
 
-  try {
-    for (const transcription of transcriptions) {
-      try {
-        console.log("fixing transcription", transcription.id);
+  const sessionId = "b015fab5-6ca3-45a1-8b37-ec209d439626";
+  const transcriptions = await db.query.transcriptionDB.findMany({
+    where: eq(transcriptionDB.sessionId, sessionId),
+  });
 
-        const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
-          text: transcription.content,
-        });
+  const chunks = transcriptions.flatMap((t) =>
+    t.content.replace(/\\u[\dA-F]{4}/gi, "").split(".")
+  );
 
-        console.log("generated vectors for", transcription.id);
-
-        await insertTranscription(c.env, response.data[0], transcription);
-      } catch (e) {
-        console.log(transcription.id, "failed");
-      }
+  return streamText(c, async (stream) => {
+    for (const chunk of chunks) {
+      await stream.writeln(chunk);
+      await new Promise((r) => setTimeout(r, 2500));
     }
-  } catch (e) {
-    return c.text((e as Error).stack);
-  }
-
-  return c.json(transcriptions);
+  });
 });
 
 transcriptions.get("/transcriptions/:id", async (c) => {
@@ -70,7 +64,6 @@ transcriptions.post(
   zValidator("json", insertTranscriptionSchema),
   async (c) => {
     const data = await c.req.valid("json");
-    console.log(data);
     const db = getD1Client(c.env);
     await db.insert(transcriptionDB).values(data);
 

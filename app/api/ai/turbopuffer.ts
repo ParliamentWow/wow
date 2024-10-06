@@ -47,48 +47,48 @@ export async function insertTranscription(
   if (!env.TURBOPUFFER_KEY) {
     throw Error("TURBOPUFFER_KEY not found");
   }
-  //   const pufResponse = await fetch(
-  //     `https://api.turbopuffer.com/v1/vectors/${data.sessionId}`,
-  //     {
-  //       method: "POST",
-  //       headers: {
-  //         Authorization: `Bearer ${env.TURBOPUFFER_KEY}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         upserts: [
-  //           {
-  //             id: trascription.id,
-  //             vector,
-  //             attributes: {
-  //               page_content: trascription.content,
-  //               metadata: JSON.stringify({
-  //                 ...trascription,
-  //                 content: undefined,
-  //                 metadata: "transcriptions",
-  //               }),
-  //             },
-  //           },
-  //         ],
-  //         distance_metric: "cosine_distance",
-  //         schema: {
-  //           page_content: {
-  //             type: "string",
-  //             bm25: {
-  //               language: "english",
-  //               stemming: false,
-  //               remove_stopwords: true,
-  //               case_sensitive: false,
-  //             },
-  //           },
-  //         },
-  //       }),
-  //     }
-  //   );
+  const pufResponse = await fetch(
+    `https://api.turbopuffer.com/v1/vectors/${trascription.sessionId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.TURBOPUFFER_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        upserts: [
+          {
+            id: trascription.id,
+            vector,
+            attributes: {
+              page_content: trascription.content,
+              metadata: JSON.stringify({
+                ...trascription,
+                content: undefined,
+                metadata: "transcriptions",
+              }),
+            },
+          },
+        ],
+        distance_metric: "cosine_distance",
+        schema: {
+          page_content: {
+            type: "string",
+            bm25: {
+              language: "english",
+              stemming: false,
+              remove_stopwords: true,
+              case_sensitive: false,
+            },
+          },
+        },
+      }),
+    }
+  );
 
-  //   if (!pufResponse.ok) {
-  //     throw new Error("Failed to insert into puffer");
-  //   }
+  if (!pufResponse.ok) {
+    throw new Error("Failed to insert into puffer");
+  }
 
   const pufResponseD = await fetch(
     `https://api.turbopuffer.com/v1/vectors/trascription`,

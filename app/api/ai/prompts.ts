@@ -1,9 +1,9 @@
 import { SummarySize } from "./types";
 
 export const summaryPrompt = (
-  size: SummarySize,
   transcription: string,
-  billTitle: string
+  billTitle: string,
+  question?: string
 ) => `You are tasked with summarizing a parliamentary debate and analyzing its potential impacts. You will be provided with transcription data from the debate, the title of the bill being discussed, and a specified summary size.
 
 First, carefully read through the following transcription data from the parliamentary debate:
@@ -31,10 +31,7 @@ Consider how these impacts might affect different groups of people, including bu
 - Industries or sectors
 - Government institutions
 
-The summary should be ${size} in length. Here are the word count guidelines:
-- Small: 50 words
-- Medium: 150 words
-- Long: 400 words
+${question ? `The user has asked the following question: "${question}"` : ""}
 
 Please provide your summary and analysis in the following format:
 

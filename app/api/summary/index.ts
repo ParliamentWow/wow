@@ -15,6 +15,7 @@ summary.post(
     z.object({
       sessionId: z.string(),
       billName: z.string(),
+      question: z.string(),
     })
   ),
   async (c) => {
@@ -58,11 +59,11 @@ summary.post(
       };
     }[];
     const prompt = summaryPrompt(
-      SummarySize.Short,
       puffData
         .map((pd) => `<content>${pd.attributes.page_content}</content>`)
         .join("\n"),
-      data.billName
+      data.billName,
+      data.question
     );
     const mistral = await c.env.AI.run(
       "@cf/mistral/mistral-7b-instruct-v0.2-lora",
