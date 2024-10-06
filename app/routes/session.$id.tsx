@@ -371,7 +371,7 @@ function Transcription({ sessionId }: { sessionId: string}) {
       return "Loading ...";
     }
 
-    const response = await fetch(`/api/transcriptions/${sessionId}`)
+    const response = await fetch(`/api/transcriptions/live`)
     return response.text();
   });
 

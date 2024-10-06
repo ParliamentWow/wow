@@ -39,7 +39,7 @@ transcriptions.get("/transcriptions/live", async (c) => {
   return streamText(c, async (stream) => {
     for (const chunk of chunks) {
       await stream.writeln(chunk);
-      await new Promise((r) => setTimeout(r, 2500));
+      await new Promise((r) => setTimeout(r, 1000));
     }
   });
 });
