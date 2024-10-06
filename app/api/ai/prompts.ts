@@ -4,6 +4,19 @@ export const summaryPrompt = (
   question?: string
 ) => `You are tasked with summarizing a parliamentary debate and analyzing its potential impacts. You will be provided with transcription data from the debate, the title of the bill being discussed, and a specified summary size.
 
+${
+  question
+    ? `The user has asked a question about the bill:
+
+<question>
+${question}
+</question>
+
+Please answer the question in the summary.
+`
+    : ""
+}
+
 First, carefully read through the following transcription data from the parliamentary debate:
 
 <transcription>
