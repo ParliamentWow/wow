@@ -46,17 +46,20 @@ transcriptions.get("/transcriptions/:id", async (c) => {
   const id = c.req.param("id");
   const db = getD1Client(c.env);
 
-  const transcription = await db.query.transcriptionDB.findFirst({
-    where: eq(transcriptionDB.id, id),
+  const transcriptions = await db.query.transcriptionDB.findMany({
+    where: eq(transcriptionDB.sessionId, id),
   });
 
-  return c.json(
-    {
-      message: "Transcription fetched",
-      result: transcription,
-    },
-    200
+  const chunks = transcriptions.flatMap((t) =>
+    t.content.replace(/\\u[\dA-F]{4}/gi, "").split(".")
   );
+
+  return streamText(c, async (stream) => {
+    for (const chunk of chunks) {
+      await stream.writeln(chunk);
+      await new Promise((r) => setTimeout(r, 2500));
+    }
+  });
 });
 
 transcriptions.post(
