@@ -147,3 +147,5 @@ __pycache__
 bills/**/*
 
 scratch/dest
+
+**/bills_json/
