@@ -137,7 +137,6 @@ summary.post(
         },
         body: JSON.stringify({
           vector: billEmbedding.data[0],
-          //   rank_by: ["page_content", "BM25", data.question],
           top_k: 10,
           include_attributes: true,
         }),
@@ -163,12 +162,7 @@ summary.post(
         metadata: string;
       };
     }[];
-    //  metadata
-    // title: string;
-    //     description: string;
-    //     url: string;
-    //     content: string;
-    //     publishDate: string;
+
     const bill = data.billName;
     const billExtracts = puffBillsData
       .map((el) => ({
