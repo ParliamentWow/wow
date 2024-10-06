@@ -54,6 +54,7 @@ summary.post(
     const puffData = (await pufResponse.json()) as {
       attributes: {
         page_content: string;
+        metadata: string;
       };
     }[];
     const prompt = summaryPrompt(
@@ -158,50 +159,50 @@ summary.post(
 
     const puffBillsData = (await pufBillsResponse.json()) as {
       attributes: {
-        title: string;
-        description: string;
-        url: string;
-        content: string;
-        publishDate: string;
+        page_content: string;
+        metadata: string;
       };
     }[];
-
+    //  metadata
+    // title: string;
+    //     description: string;
+    //     url: string;
+    //     content: string;
+    //     publishDate: string;
     const bill = data.billName;
-
     const billExtracts = puffBillsData
+      .map((el) => ({
+        attributes: {
+          ...JSON.parse(el.attributes.metadata),
+          page_content: el.attributes.page_content,
+        },
+      }))
       .map(
         (pd) =>
-          `<title>${pd.attributes.title}</title> <description>${pd.attributes.description}</description> <url>${pd.attributes.url}</url> <content>${pd.attributes.content}</content>`
+          `<title>${pd.attributes.title}</title> <description>${pd.attributes.description}</description> <url>${pd.attributes.url}</url> <content>${pd.attributes.page_content}</content>`
       )
       .join("\n");
 
-    const transcripts = summaryPrompt(
-      SummarySize.Short,
-      puffData
-        .map((pd) => `<content>${pd.attributes.page_content}</content>`)
-        .join("\n"),
-      data.billName
-    );
+    const transcripts = puffData
+      .map((pd) => `<content>${pd.attributes.page_content}</content>`)
+      .join("\n");
 
-    const prompt = `
-        ${question}
-        ${bill}
-        ${billExtracts}
-        ${transcripts}
+    const prompt = `${data.question}
+${bill}
+${billExtracts}
+${transcripts}
     `;
-    const mistral = await c.env.AI.run(
-      "@cf/mistral/mistral-7b-instruct-v0.2-lora",
-      {
-        prompt,
-      }
-    );
+    const mistral = await c.env.AI.run("@hf/mistral/mistral-7b-instruct-v0.2", {
+      prompt,
+    });
 
     return c.json(
       {
         message: "Summary fetched",
         result: mistral,
+        prompt,
       },
-      201
+      200
     );
   }
 );

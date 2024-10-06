@@ -1,10 +1,47 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-
+import * as turbopuffer from "../ai/turbopuffer";
 import { Env } from "~/server";
 
 const documents = new Hono<{ Bindings: Env }>();
+
+documents.get(
+  "/documents",
+  zValidator(
+    "query",
+    z
+      .object({
+        search: z.string().optional(),
+      })
+      .optional()
+  ),
+  async (c) => {
+    const query = c.req.valid("query") || {};
+
+    if (query.search) {
+      const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
+        text: query.search,
+      });
+
+      try {
+        const res = await turbopuffer.query(c.env, "bills", response.data[0]);
+
+        return c.json(res);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    return c.json(
+      {
+        message: "Documents fetched",
+        results: [],
+      },
+      200
+    );
+  }
+);
 
 documents.post(
   "/documents",
