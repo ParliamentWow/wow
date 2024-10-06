@@ -73,9 +73,7 @@ summary.post(
     });
 
     const res = stream(c, async (stream) => {
-      let fullText = "";
       for await (const chunk of textStream) {
-        fullText += chunk;
         await stream.write(chunk);
       }
       await stream.close();
