@@ -16,7 +16,7 @@ summary.post(
     "json",
     z.object({
       sessionId: z.string(),
-      billName: z.string(),
+      billName: z.string().optional(),
       question: z.string().optional(),
     })
   ),
@@ -24,29 +24,46 @@ summary.post(
     const data = await c.req.valid("json");
     const sessionId = data.sessionId;
     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
-      text: data.billName,
+      text:
+        data.billName ?? "key moments in the debate and important decisions",
     });
 
     if (!c.env.TURBOPUFFER_KEY) {
       throw new Error("TURBOPUFFER_KEY not found");
     }
 
-    const [transcriptions, bills] = await Promise.all([
-      getTranscriptionBySessionId(c.env, sessionId, response.data[0]),
-      getBills(c.env, response.data[0]),
-    ]);
+    let context = "";
 
-    const context =
-      transcriptions
-        .map((pd) => {
-          return `<transcriptions content="${pd.attributes.page_content}", source_url="${pd.attributes.metadata}" />`;
-        })
-        .join("\n") +
-      bills
-        .map((pd) => {
-          return `<bills content="${pd.attributes.page_content}", source_url="${pd.attributes.metadata}" />`;
-        })
+    if (!data.billName) {
+      const transcriptions = await getTranscriptionBySessionId(
+        c.env,
+        sessionId,
+        response.data[0]
+      );
+      context = transcriptions
+        .map(
+          (pd) =>
+            `<transcriptions content="${pd.attributes.page_content}", metadata="${pd.attributes.metadata}" />`
+        )
         .join("\n");
+    } else {
+      const [transcriptions, bills] = await Promise.all([
+        getTranscriptionBySessionId(c.env, sessionId, response.data[0]),
+        getBills(c.env, response.data[0]),
+      ]);
+
+      context =
+        transcriptions
+          .map((pd) => {
+            return `<transcriptions content="${pd.attributes.page_content}", metadata="${pd.attributes.metadata}" />`;
+          })
+          .join("\n") +
+        bills
+          .map((pd) => {
+            return `<bills content="${pd.attributes.page_content}", metadata="${pd.attributes.metadata}" />`;
+          })
+          .join("\n");
+    }
 
     const prompt = summaryPrompt(context, data.billName, data.question);
     const { text } = await generateText({

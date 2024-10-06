@@ -1,6 +1,6 @@
 export const summaryPrompt = (
   transcription: string,
-  billTitle: string,
+  billTitle?: string,
   question?: string
 ) => `You are tasked with summarizing a parliamentary debate and analyzing its potential impacts. You will be provided with transcription data from the debate, the title of the bill being discussed, and a specified summary size.
 
@@ -23,9 +23,14 @@ First, carefully read through the following transcription data from the parliame
 ${transcription}
 </transcription>
 
-The debate is centered around the following bill:
+${
+  billTitle
+    ? `The debate is centered around the following bill:
 
 <bill_title>${billTitle}</bill_title>
+`
+    : ""
+}
 
 Your task is to create a summary of the debate that focuses on:
 1. The main points being discussed
