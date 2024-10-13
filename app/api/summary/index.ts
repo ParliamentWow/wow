@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 
 import { streamText } from "ai";
-import { streamText as stream } from "hono/streaming";
+import { stream } from "hono/streaming";
 import { Env } from "~/server";
 import { google, mistral } from "../ai/models";
 import { qAPrompt, summaryPrompt } from "../ai/prompts";
@@ -71,15 +71,13 @@ summary.post(
 
     const { textStream } = streamRes;
 
-    const res = stream(c, async (stream) => {
+    return stream(c, async (stream) => {
       for await (const chunk of textStream) {
+        console.log(chunk);
         await stream.write(chunk);
       }
+      await stream.close();
     });
-
-    res.headers.set("content-encoding", "identity");
-
-    return res;
   }
 );
 
