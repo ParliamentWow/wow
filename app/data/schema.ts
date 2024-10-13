@@ -48,6 +48,7 @@ export const insertSessionSchema = createInsertSchema(sessionDB, {
     })
   ),
 });
+
 export const sessionRelations = relations(sessionDB, ({ many }) => ({
   transcriptions: many(transcriptionDB),
 }));

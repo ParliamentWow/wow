@@ -40,6 +40,8 @@ summary.post(
       getBills(c.env, response.data[0]),
     ]);
 
+    console.log(bills);
+
     const context =
       transcriptions
         .map((pd) => {
