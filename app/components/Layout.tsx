@@ -1,33 +1,3 @@
-const Footer = ({
-  navigation,
-}: {
-  navigation: { name: string; href: string; icon: React.ElementType }[];
-}) => {
-  return (
-    <footer className="bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
-        <div className="flex justify-center space-x-6 md:order-2">
-          {navigation.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <span className="sr-only">{item.name}</span>
-              <item.icon aria-hidden="true" className="h-6 w-6" />
-            </a>
-          ))}
-        </div>
-        <div className="mt-8 md:order-1 md:mt-0">
-          <p className="text-center text-xs leading-5 text-gray-500">
-            &copy; 2024 Parliament Wow. All rights reserved.
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
 const footerItems = [
   {
     name: "X",
@@ -53,20 +23,48 @@ const footerItems = [
   },
 ];
 
-const Navigation = () => {
+export const Footer = () => {
   return (
-    <header className="bg-white">
+    <footer>
+      <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
+        <div className="flex justify-center space-x-6 md:order-2">
+          {footerItems.map((item) => (
+            <a
+              key={item.name}
+              href={item.href}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <span className="sr-only">{item.name}</span>
+              <item.icon aria-hidden="true" className="h-6 w-6" />
+            </a>
+          ))}
+        </div>
+        <div className="mt-8 md:order-1 md:mt-0">
+          <p className="text-center text-xs leading-5 text-gray-500">
+            &copy; 2024 Parliament Wow. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+
+
+export const Navigation = () => {
+  return (
+    <header className="pt-4">
       <nav
         aria-label="Global"
-        className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
+        className="mx-auto flex max-w-7xl items-center p-4 justify-between lg:px-8 "
       >
         <div className="flex lg:flex-1">
           <a href="#" className="-m-1.5 p-1.5 flex items-center gap-2">
             <span className="sr-only">Parliament Wow</span>
             <img
-              alt=""
-              src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
-              className="h-8 w-auto"
+              src="/wow.png"
+              alt="Parliament Wow"
+              className="w-10 h-10 inline-block mr-2"
             />
             <h1 className="text-lg font-semibold">Parliament Wow</h1>
           </a>
@@ -85,7 +83,7 @@ const Navigation = () => {
 };
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="bg-purple-400">
+    <div className="bg-[url('/parliament.jpg')] bg-cover">
       <Navigation />
       {children}
       <Footer navigation={footerItems} />

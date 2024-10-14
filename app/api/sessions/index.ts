@@ -70,24 +70,24 @@ sessions.get("/sessions/:id", async (c) => {
   );
 });
 
-const sessionRoute = sessions.post(
-  "/sessions",
-  zValidator("json", insertSessionSchema),
-  async (c) => {
-    const data = await c.req.valid("json");
-    const db = getD1Client(c.env);
-    await db
-      .insert(sessionDB)
-      .values({ ...data, timestamp: new Date(data.timestamp) });
+// const sessionRoute = sessions.post(
+//   "/sessions",
+//   zValidator("json", insertSessionSchema),
+//   async (c) => {
+//     const data = await c.req.valid("json");
+//     const db = getD1Client(c.env);
+//     await db
+//       .insert(sessionDB)
+//       .values({ ...data, timestamp: new Date(data.timestamp) });
 
-    return c.json(
-      {
-        message: "Session created",
-      },
-      201
-    );
-  }
-);
+//     return c.json(
+//       {
+//         message: "Session created",
+//       },
+//       201
+//     );
+//   }
+// );
 
 export type SessionRoute = typeof sessionRoute;
 
