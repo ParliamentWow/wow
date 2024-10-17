@@ -67,26 +67,26 @@ transcriptions.get("/transcriptions/:id", async (c) => {
   });
 });
 
-transcriptions.post(
-  "/transcriptions",
-  zValidator("json", insertTranscriptionSchema),
-  async (c) => {
-    const data = await c.req.valid("json");
-    const db = getD1Client(c.env);
-    await db.insert(transcriptionDB).values(data);
+// transcriptions.post(
+//   "/transcriptions",
+//   zValidator("json", insertTranscriptionSchema),
+//   async (c) => {
+//     const data = await c.req.valid("json");
+//     const db = getD1Client(c.env);
+//     await db.insert(transcriptionDB).values(data);
 
-    const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
-      text: data.content,
-    });
-    await insertTranscription(c.env, response.data[0], data);
+//     const response = await c.env.AI.run("@cf/baai/bge-large-en-v1.5", {
+//       text: data.content,
+//     });
+//     await insertTranscription(c.env, response.data[0], data);
 
-    return c.json(
-      {
-        message: "Transcription created",
-      },
-      201
-    );
-  }
-);
+//     return c.json(
+//       {
+//         message: "Transcription created",
+//       },
+//       201
+//     );
+//   }
+// );
 
 export default transcriptions;
