@@ -53,7 +53,7 @@ export const Footer = () => {
 
 export const Navigation = () => {
   return (
-    <header className="pt-4">
+    <header className="">
       <nav
         aria-label="Global"
         className="mx-auto flex max-w-7xl items-center p-4 justify-between lg:px-8 "
@@ -69,14 +69,7 @@ export const Navigation = () => {
             <h1 className="text-lg font-semibold">Parliament Wow</h1>
           </a>
         </div>
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <a
-            href="/about"
-            className="text-sm font-semibold leading-6 text-gray-900"
-          >
-            About
-          </a>
-        </div>
+
       </nav>
     </header>
   );

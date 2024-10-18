@@ -9,9 +9,12 @@ import {
   useLoaderData,
   useSearchParams,
 } from "@remix-run/react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Footer, Layout, Navigation } from "~/components/Layout";
 import SessionList, { type Session } from "~/components/SessionList";
+import InteractiveSummary, {
+  InteractiveSummarySkeleton,
+} from "~/components/InteractiveSummary";
 import { getD1Client } from "~/data";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
@@ -26,11 +29,14 @@ export default function Index() {
     <div>
       <div className="bg-[url('/parliament.jpg')] bg-cover">
         <Navigation />
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+        <div className="mx-auto max-w-2xl py-32 sm:py-36 lg:py-42">
           <div className="hidden sm:mb-8 sm:flex sm:justify-center">
             <div className="flex gap-1 relative rounded-full px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
               Announcing our Build Back Britain a16z London hackathon win!
-              <a href="https://www.linkedin.com/posts/mattzcarey_i-still-cant-believe-we-won-andreessen-activity-7249093301495037953-GRKA" className="font-semibold text-indigo-600">
+              <a
+                href="https://www.linkedin.com/posts/mattzcarey_i-still-cant-believe-we-won-andreessen-activity-7249093301495037953-GRKA"
+                className="font-semibold text-blue-800"
+              >
                 <span aria-hidden="true" className="absolute inset-0" />
                 Read more <span aria-hidden="true">&rarr;</span>
               </a>
@@ -38,26 +44,32 @@ export default function Index() {
           </div>
           <div className="text-center">
             <h1 className="text-balance text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Your AI powered Parliamentry Assistant
+              Your AI powered Parliamentary Assistant
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600">
-              Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt amet
-              fugiat veniam occaecat fugiat aliqua.
+              Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui
+              lorem cupidatat commodo. Elit sunt amet fugiat veniam occaecat
+              fugiat aliqua.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <a
                 href="#"
-                className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="rounded-md bg-blue-800 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Get started
               </a>
-              <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
+              <a
+                href="#"
+                className="text-sm font-semibold leading-6 text-gray-900"
+              >
                 Learn more <span aria-hidden="true">→</span>
               </a>
             </div>
           </div>
         </div>
-
+        <Suspense fallback={<div>Loading...</div>}>
+          <InteractiveSummarySkeleton />
+        </Suspense>
         <div className="py-16 sm:py-24">
           <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div className="relative isolate flex flex-col gap-10 overflow-hidden bg-gray-900 bg-opacity-70 px-6 py-24 shadow-2xl sm:rounded-3xl sm:px-24 xl:flex-row xl:items-center xl:py-32">
@@ -86,7 +98,7 @@ export default function Index() {
                   </button>
                 </div>
                 <p className="mt-4 text-sm leading-6 text-gray-300">
-                  We care about your data. Read our{' '}
+                  We care about your data. Read our{" "}
                   <a href="#" className="font-semibold text-white">
                     privacy&nbsp;policy
                   </a>
@@ -98,7 +110,13 @@ export default function Index() {
                 aria-hidden="true"
                 className="absolute left-1/2 top-1/2 -z-10 h-[64rem] w-[64rem] -translate-x-1/2"
               >
-                <circle r={512} cx={512} cy={512} fill="url(#759c1415-0410-454c-8f7c-9a820de03641)" fillOpacity="0.7" />
+                <circle
+                  r={512}
+                  cx={512}
+                  cy={512}
+                  fill="url(#759c1415-0410-454c-8f7c-9a820de03641)"
+                  fillOpacity="0.7"
+                />
                 <defs>
                   <radialGradient
                     r={1}
@@ -118,7 +136,6 @@ export default function Index() {
         </div>
       </div>
       <Footer />
-
     </div>
   );
 }
