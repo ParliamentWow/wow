@@ -3,11 +3,13 @@ import React from "react";
 const CardWithHeaderAndFooter = ({
   innerRef,
   header,
+  menu,
   content,
   footer,
 }: {
   innerRef: React.RefObject<HTMLDivElement>;
   header: React.ReactNode;
+  menu: React.ReactNode;
   content: React.ReactNode;
   footer?: React.ReactNode;
 }) => {
@@ -15,13 +17,18 @@ const CardWithHeaderAndFooter = ({
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" ref={innerRef}>
       {/* We've used 3xl here, but feel free to try other max-widths based on your needs */}
       <div className="mx-auto max-w-3xl">
-        <div className="overflow-hidden rounded-lg bg-gray-900 bg-opacity-70 shadow">
-          <div className="px-4 py-4 sm:px-6">{header}</div>
-          <div className="px-4 py-4 sm:p-6">{content}</div>
-          {footer && <div className="px-4 py-4 sm:px-6">{footer}</div>}
+        <div className="bg-gray-50 border-solid border-gray-300 border-[1px] shadow-2xl p-1 rounded-2xl">
+          <div className="overflow-hidden rounded-xl bg-white border-solid border-[1px] border-gray-300">
+            <div className="px-4 py-4 sm:px-6 border-b-gray-200 border-solid border-b-[1px] hover:bg-gray-100 *:hover:bg-gray-100">{header}</div>
+            <div className="px-4 py-4 sm:px-6 border-b-gray-200 border-solid border-b-[1px]">
+              {menu}
+            </div>
+            <div className="p-4 max-h-64 overflow-auto">{content}</div>
+            {footer && <div className="px-4 py-4 sm:px-6">{footer}</div>}
+          </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
@@ -42,6 +49,81 @@ const SummarySkeleton = () => {
     </div>
   );
 };
+
+const sittings = [
+  {
+    id: 14,
+    location: "House of Commons",
+    name: "27th October 2024",
+  },
+  {
+    id: 13,
+    location: "House of Commons",
+    name: "26th October 2024",
+  },
+  {
+    id: 12,
+    location: "House of Commons",
+    name: "25th October 2024",
+  },
+  {
+    id: 11,
+    location: "House of Commons",
+    name: "24th October 2024",
+  },
+  {
+    id: 10,
+    location: "House of Commons",
+    name: "23rd October 2024",
+  },
+  {
+    id: 9,
+    location: "House of Commons",
+    name: "22nd October 2024",
+  },
+  {
+    id: 8,
+    location: "House of Commons",
+    name: "21st October 2024",
+  },
+  {
+    id: 7,
+    location: "House of Commons",
+    name: "20th October 2024",
+  },
+  {
+    id: 6,
+    location: "House of Commons",
+    name: "19th October 2024",
+  },
+  {
+    id: 5,
+    location: "House of Commons",
+    name: "18th October 2024",
+  },
+  {
+    id: 4,
+    location: "House of Commons",
+    name: "17th October 2024",
+  },
+  {
+    id: 3,
+    location: "House of Commons",
+    name: "16th October 2024",
+  },
+  {
+    id: 2,
+    location: "House of Commons",
+    name: "15th October 2024",
+  },
+  {
+    id: 1,
+    location: "House of Commons",
+    name: "14th October 2024",
+  },
+];
+
+
 export const InteractiveSummarySkeleton = () => {
   const [loading, setLoading] = React.useState(true);
   const ref = React.useRef<HTMLDivElement | null>(null);
@@ -53,7 +135,7 @@ export const InteractiveSummarySkeleton = () => {
         if (
           rect.top >= 0 &&
           rect.bottom <=
-            (window.innerHeight || document.documentElement.clientHeight)
+          (window.innerHeight || document.documentElement.clientHeight)
         ) {
           const timer = setTimeout(() => {
             setLoading(false);
@@ -74,68 +156,61 @@ export const InteractiveSummarySkeleton = () => {
     <CardWithHeaderAndFooter
       innerRef={ref}
       header={
-        <div className="text-lg font-semibold text-gray-900">
-          Latest Session: House of Commons - Thursday 17 October 2024
+        <input
+          className="w-full focus:outline-none text-lg"
+          placeholder="Search 100+ Parliamentary sittings..."
+        />
+      }
+      menu={
+        <div className="flex space-x-2">
+          <button className="px-2 py-1 bg-green-900 text-white rounded-lg hover:bg-green-800">
+            House of Commons
+          </button>
+          <button className="px-2 py-1 bg-red-900 text-white rounded-lg hover:bg-red-800">
+            House of Lords
+          </button>
+          <button className="px-2 py-1 bg-blue-900 text-white rounded-lg hover:bg-blue-800">
+            Committees
+          </button>
         </div>
       }
       content={
         loading ? (
           <SummarySkeleton />
         ) : (
-          <div>
-            <div>
-              <p className="text-base text-gray-700">
-                The latest parliamentary session covered several key topics and
-                discussions. Here is a brief summary:
-              </p>
-              <ul className="list-disc list-inside space-y-2 mt-4 text-gray-700">
-                <li>
-                  Discussion on the new healthcare reform bill and its
-                  implications.
-                </li>
-                <li>Debate on the proposed changes to the education system.</li>
-                <li>
-                  Review of the recent economic performance and future
-                  projections.
-                </li>
-                <li>Updates on international relations and foreign policy.</li>
-                <li>Questions and answers session with the Prime Minister.</li>
-              </ul>
-              <div className="mt-4">
-                <a href="#" className="text-blue-800 hover:underline">
-                  Read the full transcript
-                </a>
-              </div>
-              <div className="mt-2">
-                <a href="#" className="text-blue-800 hover:underline">
-                  Watch the session video
-                </a>
-              </div>
+          <div className="">
+            <div className="p-1 text-gray-400 font-bold">Sittings</div>
+            <div className="flex flex-col gap-2">
+              {sittings.map((sitting) => (
+                <button
+                  key={sitting.id}
+                  className="group flex items-center justify-between p-2 hover:bg-gray-100 rounded-xl  transition-all duration-100 ease-in-out"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="font-bold text-gray-900">{sitting.name}</div>
+                    <div className="text-sm text-gray-600">{sitting.location}</div>
+                  </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-gray-600 h-6 w-6 transform transition-transform duration-100 ease-in-out group-hover:translate-x-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              ))}
             </div>
           </div>
         )
       }
-      footer={
-        !loading && (
-          <div className="flex flex-col space-y-4">
-            <textarea
-              placeholder="Ask a question about this sitting..."
-              className="flex-grow px-4 py-2 border rounded resize-none"
-              rows={1}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  e.currentTarget.style.height = "auto";
-                  e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                }
-              }}
-            />
-            <button className="px-4 py-2 bg-blue-800 text-white rounded self-end">
-              Submit
-            </button>
-          </div>
-        )
-      }
+
     />
   );
 };

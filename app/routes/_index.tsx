@@ -29,7 +29,7 @@ export default function Index() {
     <div>
       <div className="bg-[url('/parliament.jpg')] bg-cover">
         <Navigation />
-        <div className="mx-auto max-w-2xl py-32 sm:py-36 lg:py-42">
+        <div className="mx-auto max-w-2xl py-24">
           <div className="hidden sm:mb-8 sm:flex sm:justify-center">
             <div className="flex gap-1 relative rounded-full px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
               Announcing our Build Back Britain a16z London hackathon win!
@@ -67,9 +67,7 @@ export default function Index() {
             </div>
           </div>
         </div>
-        <Suspense fallback={<div>Loading...</div>}>
-          <InteractiveSummarySkeleton />
-        </Suspense>
+        <InteractiveSummarySkeleton />
         <div className="py-16 sm:py-24">
           <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div className="relative isolate flex flex-col gap-10 overflow-hidden bg-gray-900 bg-opacity-70 px-6 py-24 shadow-2xl sm:rounded-3xl sm:px-24 xl:flex-row xl:items-center xl:py-32">
