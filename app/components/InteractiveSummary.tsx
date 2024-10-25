@@ -23,8 +23,8 @@ const CardWithHeaderAndFooter = ({
             <div className="px-4 py-4 sm:px-6 border-b-gray-200 border-solid border-b-[1px]">
               {menu}
             </div>
-            <div className="p-4 max-h-64 overflow-auto">{content}</div>
-            {footer && <div className="px-4 py-4 sm:px-6">{footer}</div>}
+            <div className="p-4 max-h-80 overflow-auto">{content}</div>
+            {footer && <div className="px-4 py-3 sm:px-6 border-t-[1px] border-t-gray-200">{footer}</div>}
           </div>
         </div>
       </div>
@@ -51,26 +51,6 @@ const SummarySkeleton = () => {
 };
 
 const sittings = [
-  {
-    id: 14,
-    location: "House of Commons",
-    name: "27th October 2024",
-  },
-  {
-    id: 13,
-    location: "House of Commons",
-    name: "26th October 2024",
-  },
-  {
-    id: 12,
-    location: "House of Commons",
-    name: "25th October 2024",
-  },
-  {
-    id: 11,
-    location: "House of Commons",
-    name: "24th October 2024",
-  },
   {
     id: 10,
     location: "House of Commons",
@@ -209,6 +189,12 @@ export const InteractiveSummarySkeleton = () => {
             </div>
           </div>
         )
+      }
+      footer={
+        <div className="text-sm text-gray-700">
+          ParliamentWow is still work in progress. Add your email for updates
+        </div>
+
       }
 
     />
